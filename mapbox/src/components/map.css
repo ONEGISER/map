@@ -1,0 +1,6 @@
+.marker {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 3rem 3rem 0;
+    cursor: pointer;
+}

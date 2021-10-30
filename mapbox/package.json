@@ -1,10 +1,11 @@
 {
-  "name": "ncpmap-leaflet",
+  "name": "ncpmap-mapbox",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/mapbox-gl": "^2.4.2",
     "axios": "^0.24.0",
-    "leaflet": "^1.7.1",
+    "mapbox-gl": "^2.5.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
