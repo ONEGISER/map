@@ -2,7 +2,7 @@ import "./map.css"
 import "cesium/Build/Cesium/Widgets/widgets.css"
 import { useEffect } from 'react';
 import axios from "axios";
-import { BillboardGraphics, Cartesian3, CesiumTerrainProvider, defined, GeographicTilingScheme, HeightReference, ProviderViewModel, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer, WebMapTileServiceImageryProvider } from "cesium";
+import { BillboardGraphics, Cartesian3, CesiumTerrainProvider, defined, GeographicTilingScheme, HeightReference, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer, WebMapTileServiceImageryProvider } from "cesium";
 import { Popup } from "./popup"
 export const Map = () => {
     useEffect(() => {
@@ -35,7 +35,7 @@ export const Map = () => {
                 const { data } = response.data
                 for (let i in data) {
                     const _data = data[i]
-                    const { latitude, longitude, name, address, type, occur_time } = _data
+                    const { latitude, longitude, name,type } = _data
                     const isTrue = type === 1
                     const entity = {
                         name,
@@ -49,22 +49,7 @@ export const Map = () => {
                         }),
                         properties: _data
                     }
-                    const e = viewer.entities.add(entity)
-
-                    const html = `<div style="font-weight:bold;font-size:14px;">${name}</div><div style="color:#545454;">${address}</div><div>${occur_time}</div>`
-
-                    // html2canvas(markerContainer).then((value) => {
-                    //     console.log(value);
-
-                    // });
-                    // const popup = new mapboxgl.Popup({ className: 'my-class' })
-                    //     .setLngLat(lnglat)
-                    //     .setHTML(html)
-                    //     .setMaxWidth("300px")
-                    //     .addTo(map);
-                    // new mapboxgl.Marker(markerContainer, { rotation: 45 }).setLngLat(lnglat).setPopup(popup)
-                    //     .addTo(map);
-
+                    viewer.entities.add(entity)
                 }
             }
         })
