@@ -1,15 +1,26 @@
 import "./map.css"
 import { useEffect } from "react";
 import { loadModules } from 'esri-loader';
+import axios from "axios";
 export const Map = () => {
     useEffect(() => {
-        loadModules(['esri/map'])
-            .then(([Map]) => {
+        loadModules(['esri/map', "esri/layers/VectorTileLayer"])
+            .then(([Map, VectorTileLayer]) => {
                 const map = new Map('map', {
                     center: [-118, 34.5],
                     zoom: 8,
-                    basemap: 'dark-gray'
+                    // basemap: 'dark-gray'
                 });
+                const url = "https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer/resources/styles/root.json"
+                // axios.get(url).then((response) => {
+                //     if (response.data) {
+                //         const vectorTileLayer = new VectorTileLayer(response.data);
+                //         map.addLayer(vectorTileLayer)
+                //     }
+
+                // })
+                const vectorTileLayer = new VectorTileLayer(url);
+                map.addLayer(vectorTileLayer)
             })
             .catch(err => {
                 console.error(err);

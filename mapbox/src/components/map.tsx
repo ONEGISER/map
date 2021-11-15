@@ -7,7 +7,7 @@ import mapboxgl from "mapbox-gl";
 export const Map = () => {
     // const [value, setValue] = React.useState<string | number>('99');
     useEffect(() => {
-        mapboxgl.accessToken = 'pk.eyJ1IjoicGN6aGVuZyIsImEiOiJjanVjamJ3b28wNGdtNDRyMTBsdGUwZmd0In0.Md_NflCXHCTzzp6wGWZJxg';
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA'//'pk.eyJ1IjoicGN6aGVuZyIsImEiOiJjanVjamJ3b28wNGdtNDRyMTBsdGUwZmd0In0.Md_NflCXHCTzzp6wGWZJxg';
         const attribution = '&copy; <a href="https://gsjlxkgc.com/">甘肃记录小康工程</a> 提供数据'
         const map = new mapboxgl.Map({
             container: 'map', // container ID
