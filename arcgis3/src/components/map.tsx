@@ -7,7 +7,7 @@ export const Map = () => {
         loadModules(['esri/map', "esri/layers/VectorTileLayer","esri/geometry/Extent"])
             .then(([Map, VectorTileLayer,Extent]) => {
                 const map = new Map('map', {
-                    center: [103, 36],
+                    center: [103.742546, 36.06],
                     zoom:3,
                     // basemap: 'dark-gray'
                 });
@@ -21,7 +21,7 @@ export const Map = () => {
                         const res = response.data
                         res.sources.composite = {
                             type: "vector",
-                            tiles: ["/mapbox/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2/{z}/{y}/{x}.vector.pbf"],
+                            tiles: ["/mapbox/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2/{z}/{x}/{y}.vector.pbf"],
                         }
                         res.sprite = "/mapbox/styles/v1/mapbox/streets-v11/sprite"
                         res.glyphs = "/mapbox/fonts/v1/mapbox/{fontstack}/{range}.pbf"
