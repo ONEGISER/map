@@ -4,23 +4,37 @@ import { loadModules } from 'esri-loader';
 import axios from "axios";
 export const Map = () => {
     useEffect(() => {
-        loadModules(['esri/map', "esri/layers/VectorTileLayer"])
-            .then(([Map, VectorTileLayer]) => {
+        loadModules(['esri/map', "esri/layers/VectorTileLayer","esri/geometry/Extent"])
+            .then(([Map, VectorTileLayer,Extent]) => {
                 const map = new Map('map', {
-                    center: [-118, 34.5],
-                    zoom: 8,
+                    center: [103, 36],
+                    zoom:3,
                     // basemap: 'dark-gray'
                 });
-                const url = "https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer/resources/styles/root.json"
-                // axios.get(url).then((response) => {
-                //     if (response.data) {
-                //         const vectorTileLayer = new VectorTileLayer(response.data);
-                //         map.addLayer(vectorTileLayer)
-                //     }
+                // const url = "https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer/resources/styles/root.json"
+                // const vectorTileLayer = new VectorTileLayer(url);
+                // map.addLayer(vectorTileLayer)
 
-                // })
-                const vectorTileLayer = new VectorTileLayer(url);
-                map.addLayer(vectorTileLayer)
+                const token = "?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA"
+                axios.get("/mapbox/styles/v1/mapbox/streets-v11").then((response) => {
+                    if (response.data) {
+                        const res = response.data
+                        res.sources.composite = {
+                            type: "vector",
+                            tiles: ["/mapbox/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2/{z}/{y}/{x}.vector.pbf"],
+                        }
+                        res.sprite = "/mapbox/styles/v1/mapbox/streets-v11/sprite"
+                        res.glyphs = "/mapbox/fonts/v1/mapbox/{fontstack}/{range}.pbf"
+                        const vectorTileLayer = new VectorTileLayer(res);
+                        map.addLayer(vectorTileLayer)
+                    }
+
+                })
+
+                // const url="/njmap/rest/services/Hosted/NJVTS_TDT_DT/VectorTileServer"
+                // const url = "/mapbox/styles/v1/mapbox/streets-v11"
+                // const vectorTileLayer = new VectorTileLayer(url);
+                // map.addLayer(vectorTileLayer)
             })
             .catch(err => {
                 console.error(err);

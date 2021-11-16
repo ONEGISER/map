@@ -1,20 +1,35 @@
 import "./map.css"
 import EsriMap from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
+import VectorTileLayer from "@arcgis/core/layers/VectorTileLayer"
 import { useEffect } from "react";
 import esriConfig from "@arcgis/core/config"
+import axios from "axios";
 export const Map = () => {
     useEffect(() => {
-        esriConfig.apiKey='AAPKbe175e40b15e49058dfe57b996e86af16d-YTr6r1PEO-Bee2LIXdl4I18UosHFG-QpjVeefCk5g_xld_VynBEGSUwLAj4PC'
+        esriConfig.apiKey = 'AAPKbe175e40b15e49058dfe57b996e86af16d-YTr6r1PEO-Bee2LIXdl4I18UosHFG-QpjVeefCk5g_xld_VynBEGSUwLAj4PC'
         const map = new EsriMap({
             basemap: "arcgis-topographic" // Basemap layer service
         });
-        new MapView({
+        const viewer = new MapView({
             map: map,
             center: [-118.805, 34.027], // Longitude, latitude
             zoom: 13, // Zoom level
             container: "map" // Div element
         });
+        axios.get("/mapbox/styles/v1/mapbox/streets-v11").then((response) => {
+            if (response.data) {
+                const res = response.data
+                res.sources.composite = {
+                    type: "vector",
+                    tiles: ["/mapbox/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2/{z}/{y}/{x}.vector.pbf"],
+                }
+                res.sprite = "/mapbox/styles/v1/mapbox/streets-v11/sprite"
+                res.glyphs = "/mapbox/fonts/v1/mapbox/{fontstack}/{range}.pbf"
+                const vectorTileLayer = new VectorTileLayer({ style: res });
+                map.add(vectorTileLayer)
+            }
+        })
     })
 
     function getDatas(viewer: any) {
