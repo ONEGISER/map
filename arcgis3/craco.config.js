@@ -30,17 +30,6 @@ module.exports = {
                 }
             },
             "/index/": { target: 'https://xgs.gsjlxkgc.com', secure: false, changeOrigin: true, },
-            "/njmap/": {
-                target: 'http://mapservices.njghzy.com.cn:84', secure: false, changeOrigin: true,
-                pathRewrite: function (path, req) {
-                    if (path.indexOf("?") > -1) {
-                        path = `${path}&njtoken=ebec67d6795afcbaaf8e17645061d1bb`
-                    } else {
-                        path = `${path}?njtoken=ebec67d6795afcbaaf8e17645061d1bb`
-                    }
-                    return path
-                }
-            },
         }
         return devServerConfig;
     },
