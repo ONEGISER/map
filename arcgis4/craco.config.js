@@ -6,12 +6,12 @@ module.exports = {
                 target: ' https://api.mapbox.com', secure: false, changeOrigin: true,
                 pathRewrite: function (path, req) {
                     path = path.replace("/mapbox/", "/")
+                    const access_token = "pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA"
                     if (path.indexOf("?") > -1) {
-                        path = `${path}&access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA`
+                        path = `${path}&access_token=${access_token}`
                     } else {
-                        path = `${path}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA`
+                        path = `${path}?access_token=${access_token}`
                     }
-                    console.log(path);
                     return path
                 }
             },
