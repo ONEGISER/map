@@ -21,9 +21,9 @@ export const Map = () => {
                 const map = new EsriMap();
                 new MapView({
                     map: map,
-                    center: [103.742546, 36.06], 
-                    zoom: 11,
-                    container: "map" 
+                    center: [87.792, 43.827],
+                    zoom: 9,
+                    container: "map",
                 });
                 map.add(vectorTileLayer)
             }

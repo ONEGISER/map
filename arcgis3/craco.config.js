@@ -29,7 +29,7 @@ module.exports = {
                     return path
                 }
             },
-            "/index/": { target: 'https://xgs.gsjlxkgc.com', secure: false, changeOrigin: true, },
+            "/index/": { target: 'https://xgs.gsjlxkgc.com', secure: false, changeOrigin: true, }
         }
         return devServerConfig;
     },

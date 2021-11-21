@@ -17,7 +17,7 @@ export const Map = () => {
                 console.error(err);
             });
     })
-    
+
     return <div className="lmap" id="map">
 
     </div>
