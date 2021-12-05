@@ -1,6 +1,7 @@
+import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { DownloadPoi } from "./application/downloadpoi";
 import { Map } from "./map"
+const DownloadPoi = React.lazy(() => import("./application/downloadpoi"))
 
 export function MyRoutes() {
     return <Router>
