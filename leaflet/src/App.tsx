@@ -1,9 +1,8 @@
+import React from 'react';
 import './App.css';
-import { Map } from "./components/map"
+import { MyRoutes } from './components/myRoutes';
 function App() {
-  return (
-    <Map />
-  )
+  return  <MyRoutes />
 }
 
 export default App;
