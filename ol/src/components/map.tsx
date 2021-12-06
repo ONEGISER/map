@@ -5,6 +5,8 @@ import OlMap from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import XYZ from 'ol/source/XYZ';
+import {HomeSub2} from "./homeSub2"
+import { HomeSub1 } from "./homeSub1";
 export const Map = () => {
     // const [value, setValue] = React.useState<string | number>('99');
     useEffect(() => {
@@ -24,7 +26,7 @@ export const Map = () => {
           });
 
         // getDatas(map)
-    })
+    },[])
 
     // function getDatas(map: any,) {
     //     axios.get("/index/index/get_data.html").then((response) => { //https://xgs.gsjlxkgc.com
@@ -56,7 +58,8 @@ export const Map = () => {
     //         }
     //     })
     // }
-    return <div className="lmap" id="map">
+    // return <div className="lmap" id="map">
 
-    </div>
+    // </div>
+    return <HomeSub1/>
 };
