@@ -45,7 +45,7 @@ export function TypeSelect(props: TypeSelectProps) {
         return datas
     }
 
-    const [kinds, setKinds] = useState(getKinds())
+    const [kinds] = useState(getKinds())
     const [kind, setKind] = useState('')
 
     const [category, setCategory] = useState('')
@@ -92,8 +92,8 @@ export function TypeSelect(props: TypeSelectProps) {
                 value={kind}
                 onChange={handleKindChange}
             >
-                {kinds?.map((data) => {
-                    return <MenuItem value={data?.gbCode}>{data?.name}</MenuItem>
+                {kinds?.map((data, i) => {
+                    return <MenuItem key={i} value={data?.gbCode}>{data?.name}</MenuItem>
                 })
                 }
             </Select>
@@ -107,8 +107,8 @@ export function TypeSelect(props: TypeSelectProps) {
                 value={category}
                 onChange={handleCategoryChange}
             >
-                {categories?.map((data) => {
-                    return <MenuItem value={data?.gbCode}>{data?.name}</MenuItem>
+                {categories?.map((data, i) => {
+                    return <MenuItem key={i} value={data?.gbCode}>{data?.name}</MenuItem>
                 })
                 }
             </Select>
@@ -122,8 +122,8 @@ export function TypeSelect(props: TypeSelectProps) {
                 value={type}
                 onChange={handleTypeChange}
             >
-                {types?.map((data) => {
-                    return <MenuItem value={data?.gbCode}>{data?.name}</MenuItem>
+                {types?.map((data, i) => {
+                    return <MenuItem key={i} value={data?.gbCode}>{data?.name}</MenuItem>
                 })
                 }
             </Select>

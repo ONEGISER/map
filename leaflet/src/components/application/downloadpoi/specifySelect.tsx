@@ -71,7 +71,7 @@ export function SpecifySelect(props: SpecifySelectProps) {
 
 
 
-    const [provinces, setProvinces] = useState(getProvinces())
+    const [provinces] = useState(getProvinces())
     const [province, setProvince] = useState('')
 
     const [cities, setCities] = useState([] as ISpecifyDatas[])
@@ -118,8 +118,8 @@ export function SpecifySelect(props: SpecifySelectProps) {
                 value={province}
                 onChange={handleProvinceChange}
             >
-                {provinces?.map((data) => {
-                    return <MenuItem value={data?.gbCode}>{data?.name}</MenuItem>
+                {provinces?.map((data, i) => {
+                    return <MenuItem key={i} value={data?.gbCode}>{data?.name}</MenuItem>
                 })
                 }
             </Select>
@@ -133,8 +133,8 @@ export function SpecifySelect(props: SpecifySelectProps) {
                 value={city}
                 onChange={handleCityChange}
             >
-                {cities?.map((data) => {
-                    return <MenuItem value={data?.gbCode}>{data?.name}</MenuItem>
+                {cities?.map((data, i) => {
+                    return <MenuItem key={i} value={data?.gbCode}>{data?.name}</MenuItem>
                 })
                 }
             </Select>
@@ -148,8 +148,8 @@ export function SpecifySelect(props: SpecifySelectProps) {
                 value={county}
                 onChange={handleCountyChange}
             >
-                {counties?.map((data) => {
-                    return <MenuItem value={data?.gbCode}>{data?.name}</MenuItem>
+                {counties?.map((data, i) => {
+                    return <MenuItem key={i} value={data?.gbCode}>{data?.name}</MenuItem>
                 })
                 }
             </Select>
