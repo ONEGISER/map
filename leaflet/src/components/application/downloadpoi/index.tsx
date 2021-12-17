@@ -28,7 +28,6 @@ export default function DownloadPoi() {
 
 
     function finish(datas: POIResults[]) {
-        setJsons('')
         const features: any[] = []
         for (let i in datas) {
             const data = datas[i]
@@ -52,9 +51,16 @@ export default function DownloadPoi() {
         const str = JSON.stringify(jsons)
         setJsons(str)
         console.log(str)
+        setJsons('')
+        setDatas([])
+        setJsons("")
+        setCount(0)
+        setTotal(0)
     }
 
     function query() {
+        setJsons('')
+        setDatas([])
         setJsons("")
         setCount(0)
         setTotal(0)
@@ -86,8 +92,9 @@ export default function DownloadPoi() {
         finish(datas)
     }
 
-    const progress = Number((count / total * 100).toFixed(0))
+    const progress = total > 0 ? Number((count / total * 100).toFixed(0)) : 0
     return <div style={{ padding: 10 }}>
+        <h1>天地图兴趣点下载</h1>
         <FormControl sx={{ m: 1, minWidth: 120 }}>
             <TextField id="outlined-basic" label="关键字" variant="outlined" onChange={onTextChange} />
         </FormControl>
@@ -95,6 +102,7 @@ export default function DownloadPoi() {
         <TypeSelect onChange={typeChange} />
         <Alert style={{ margin: 10 }} severity="info">默认行政区为中国!</Alert>
         <Button variant="contained" style={{ margin: 10 }} onClick={query}>查询</Button>
+        <Button disabled={progress === 0} variant="contained" style={{ margin: 10 }} onClick={handleCancel}>停止</Button>
         {count > 0 && <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ width: '100%', mr: 1 }}>
                 <LinearProgress variant="determinate" value={progress} />
@@ -109,7 +117,7 @@ export default function DownloadPoi() {
         </Alert>}
         <Dialog
             open={open}
-            onClose={handleClose}
+            onClose={handleCancel}
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
         >

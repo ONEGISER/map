@@ -9,22 +9,22 @@ export interface POIResults {
     poiType: string
     source: string
 }
+let stop = false
 export class TdtPoi {
     private start = 0
     private total = 0
     private datas = []
-    private stop = false
     queryPoi(isInit: boolean, specify: string, dataTypes: string, keyWord: string, success: (datas: POIResults[], count: number, total: number) => void) {
         if (isInit) {
             this.start = 0
             this.total = 0
             this.datas = []
-            this.stop = false
+            stop = false
         }
         if (!specify) {
             specify = "156000000"//默认为中国
         }
-        if (!this.stop) {
+        if (!stop) {
             if (specify) {
                 const obj: any = {
                     queryType: '13',
@@ -52,10 +52,10 @@ export class TdtPoi {
                         this.datas = this.datas.concat(results.data.pois)
                         if (this.total > this.datas.length) {
                             if (this.total)
-                                success([], this.datas.length, this.total)
+                                success(this.datas, this.datas.length, this.total)
                             const time = Math.random() * 10
                             setTimeout(() => {
-                                this.queryPoi(false, specify, keyWord, dataTypes, success)
+                                this.queryPoi(false, specify, dataTypes, keyWord, success)
                             }, time * 1000);
                         } else {
                             success(this.datas, this.datas.length, this.total)
@@ -67,10 +67,10 @@ export class TdtPoi {
     }
 
     stopDownload() {
-        this.stop = true
+        stop = true
     }
 
     startDownload() {
-        this.stop = false
+        stop = false
     }
 }
