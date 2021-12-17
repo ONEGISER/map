@@ -1,5 +1,5 @@
 # 安装依赖
-`npm run a`
+`npm install`
 
 # 启动程序
 `npm start`
