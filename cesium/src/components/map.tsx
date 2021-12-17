@@ -6,7 +6,7 @@ import { BillboardGraphics, Cartesian3, CesiumTerrainProvider, defined, Geograph
 import { Popup } from "./popup"
 export const Map = () => {
     useEffect(() => {
-        const key = "2c2bd4a5e1b2ca388e427c01d9b289d6"
+        const key = Keys.tdt
         const attribution = '&copy; <a href="https://gsjlxkgc.com/">甘肃记录小康工程</a> 提供数据'
         const dom = document.createElement("div")
         dom.innerHTML = attribution
