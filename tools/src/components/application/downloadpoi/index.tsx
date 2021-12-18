@@ -31,7 +31,7 @@ export default function DownloadPoi() {
         const features: any[] = []
         for (let i in datas) {
             const data = datas[i]
-            if (data.lonlat) {
+            if (data?.lonlat) {
                 const coordinates = data.lonlat.split(",")
                 const feature = {
                     type: "Feature",
