@@ -11,8 +11,9 @@ interface QueryResults {
     data: any
 }
 let map: L.Map
-let queryShowLayer: L.GeoJSON
-const weight = 4
+let queryShowLayer: L.GeoJSON//全局查询高亮图层
+const weight = 4//线的宽度
+//路线颜色
 const colors: { [key: string]: any } = {
     '轨道交通1号线': { color: "#3080b7", weight, },
     '轨道交通2号线': { color: "#eb81b9", weight, },
@@ -30,22 +31,26 @@ export const Map = () => {
     const [stationData, setStationData] = useState<any>(undefined);
     const [routeResults, setRouteResults] = useState<QueryResults[]>([]);
     const [stationResults, setStationResults] = useState<QueryResults[]>([]);
-    const routerName = "路线"
-    const statitonName = "站点"
+    const routerNameKey = "路线"
+    const statitonNameKey = "站点"
     function getDIVContent(properties: any) {
+        //路线信息
         return `<div style="font-weight:bold;">${properties.LineName}</div>始发站：${properties.From}<br/>终点站：${properties.To}`;
     }
 
     useEffect(() => {
+        //从GEOJSON获取数据
         getDatas((routerData: any, stationData: any) => {
+            //路线图层
             const routerLayer = L.geoJSON(routerData, {
                 style: (feature: any) => {
-                    return colors[feature.properties.LineName]
+                    return colors[feature.properties.LineName]//根据名称设置样式
                 }
             } as any).bindPopup(function (layer: any) {
                 const properties = layer.feature.properties
-                return getDIVContent(properties)
+                return getDIVContent(properties)//设置气泡内容
             })
+            //站点图层
             const stationDataLayer = L.geoJSON(stationData, {
                 pointToLayer: (feature: any, latlng: LatLng) => {
                     const label = String(feature.properties.StationNam)
@@ -53,15 +58,15 @@ export const Map = () => {
                         radius: 4,
                         color: "#fff",
                     }).bindTooltip(label, { opacity: 0.7, direction: "top" })
-                    // const label = String(feature.properties.StationNam) // Must convert to string, .bindTooltip can't use straight 'feature.properties.attribute'
-                    //.bindTooltip(label, { permanent: true, opacity: 0.7 }).openTooltip();
                 }
             } as any)
             const overLayers = {
                 "路线": routerLayer,
                 "站点": stationDataLayer
             };
+            //创建地图
             createMap(overLayers)
+            //保存数据
             setRouterData(routerData)
             setStationData(stationData)
         })
@@ -71,6 +76,7 @@ export const Map = () => {
 
 
     function getDatas(success: (routerData: any, stationData: any) => void) {
+        //查询数据
         axios.get("/datas/router.geojson").then((response) => {
             if (response.data) {
                 const data = response.data
@@ -83,21 +89,13 @@ export const Map = () => {
         })
     }
 
-
-    function addMarkers(map: any, name: string) {
-        var myIcon = L.divIcon({
-            html: name,
-            className: 'my-div-icon',
-            iconSize: 30
-        } as any);
-        L.marker([30.5749, 114.2946], { icon: myIcon }).addTo(map)
-    }
-
     function createMap(overLayers?: any) {
         const subdomains = ["0", "1", "2", "3", "4", "5", "6", "7"]
         const key = Keys.tdt
         const attribution = '&copy; <a href="https://www.tianditu.gov.cn/">天地图</a> 提供地图'
         const opacity = 0.5
+
+        //天地图影像
         const imgLayer = L.tileLayer("http://t{s}.tianditu.com/img_c/wmts?layer=img&style=default&tilematrixset=c&Service=WMTS&Request=GetTile&Version=1.0.0&Format=tiles&TileMatrix={z}&TileCol={x}&TileRow={y}&tk=" + key, {
             maxZoom: 17,
             tileSize: 256,
@@ -106,6 +104,8 @@ export const Map = () => {
             attribution,
             opacity
         })
+
+        //天地图影像标注
         const imgLabelLayer = L.tileLayer("http://t{s}.tianditu.com/cia_c/wmts?layer=cia&style=default&tilematrixset=c&Service=WMTS&Request=GetTile&Version=1.0.0&Format=tiles&TileMatrix={z}&TileCol={x}&TileRow={y}&tk=" + key, {
             maxZoom: 17,
             tileSize: 256,
@@ -114,6 +114,7 @@ export const Map = () => {
             opacity
         })
 
+        //天地图矢量
         const vecLayer = L.tileLayer("http://t{s}.tianditu.com/vec_c/wmts?layer=vec&style=default&tilematrixset=c&Service=WMTS&Request=GetTile&Version=1.0.0&Format=tiles&TileMatrix={z}&TileCol={x}&TileRow={y}&tk=" + key, {
             maxZoom: 17,
             tileSize: 256,
@@ -122,6 +123,8 @@ export const Map = () => {
             attribution,
             opacity
         })
+
+        //天地图矢量标注
         const vecLabelLayer = L.tileLayer("http://t{s}.tianditu.com/cva_c/wmts?layer=cva&style=default&tilematrixset=c&Service=WMTS&Request=GetTile&Version=1.0.0&Format=tiles&TileMatrix={z}&TileCol={x}&TileRow={y}&tk=" + key, {
             maxZoom: 17,
             tileSize: 256,
@@ -129,13 +132,16 @@ export const Map = () => {
             subdomains,
             opacity
         })
+
+        //初始化图层
         const layers = [vecLayer, vecLabelLayer,]
-        if (overLayers && overLayers[routerName] && overLayers[statitonName]) {
-            layers.push(overLayers[routerName], overLayers[statitonName])
+        if (overLayers && overLayers[routerNameKey] && overLayers[statitonNameKey]) {
+            layers.push(overLayers[routerNameKey], overLayers[statitonNameKey])
         }
 
         const defaultLayers = L.layerGroup(layers)
 
+        //构造地图
         map = L.map('map', {
             crs: L.CRS.EPSG4326,
             zoomControl: false,
@@ -143,6 +149,7 @@ export const Map = () => {
             layers: [defaultLayers] as any
         }).setView([MapCenterPoint.y, MapCenterPoint.x], MapCenterPoint.z);
 
+        //构造图层列表
         const baseLayers = {
             "矢量": defaultLayers,
             "影像": L.layerGroup([imgLayer, imgLabelLayer])
@@ -150,6 +157,7 @@ export const Map = () => {
         const layerControl = L.control.layers(baseLayers, overLayers);
         map.addControl(layerControl);
 
+        //导入样式
         require("./map.css")
 
         //缩放控件
@@ -161,6 +169,7 @@ export const Map = () => {
     }
 
     function handleSearch(value: string) {
+        //搜索逻辑
         const routerR: QueryResults[] = []
         if (value && routerData && routerData.features) {
             for (let i in routerData.features) {
@@ -192,16 +201,18 @@ export const Map = () => {
         }
         setStationResults(stationR)
         if (!value) {
+            //移除高亮图层
             queryShowLayer?.remove()
         }
     }
 
     function onSelect(value: string, option: any) {
-        queryShowLayer?.remove()
+        queryShowLayer?.remove() //移除高亮图层
         if (option?.data?.data) {
             const feature = option?.data?.data
             if (feature) {
                 if (option.data.type === "station") {
+                    //高亮点构造
                     queryShowLayer = L.geoJSON(
                         {
                             "type": "FeatureCollection",
@@ -219,7 +230,7 @@ export const Map = () => {
                             }
                         } as any)
                     map.addLayer(queryShowLayer)
-                    map.flyToBounds(queryShowLayer.getBounds())
+                    map.flyToBounds(queryShowLayer.getBounds())//飞至范围
                 } else if (option.data.type === "route") {
                     //添加查询图层
                     queryShowLayer = L.geoJSON()
@@ -229,8 +240,8 @@ export const Map = () => {
                         color: "#00FFFF",
                         weight: 5
                     })
-                    queryShowLayer.bindPopup(getDIVContent(feature.properties)).openPopup()
-                    map.flyToBounds(queryShowLayer.getBounds())
+                    queryShowLayer.bindPopup(getDIVContent(feature.properties)).openPopup()//打开标注
+                    map.flyToBounds(queryShowLayer.getBounds())//飞至范围
                 }
             }
         }
@@ -238,6 +249,7 @@ export const Map = () => {
 
 
     function renderOptions() {
+        //搜索选项UI
         const options: any[] = []
         const routers = {
             label: "路线",
@@ -303,6 +315,7 @@ export const Map = () => {
     }
 
     function renderLegend() {
+        //图例UI
         const backgroundColor = `rgba(255,255,255,0.85)`
         const jsxs = []
         for (let i in colors) {
@@ -324,12 +337,15 @@ export const Map = () => {
     }
 
     return <div style={{ height: "100%", width: "100%", position: "absolute" }}>
+        {/* 地图容器 */}
         <div className="lmap" id="map">
 
         </div>
+        {/* logo容器 */}
         <div style={{ position: "absolute", left: 10, top: 10, zIndex: 1000 }}>
             <img style={{ height: 100, zIndex: 10 }} src={logo} />
         </div>
+        {/* 搜索容器 */}
         <div style={{ position: "absolute", right: 80, top: 10, zIndex: 1000 }}>
             <AutoComplete
                 dropdownMatchSelectWidth={252}
@@ -342,6 +358,7 @@ export const Map = () => {
                 <Input.Search style={{ height: "100%" }} bordered size="large" placeholder="请输入地铁线路或站点名称" enterButton />
             </AutoComplete>
         </div>
+        {/* 图例容器 */}
         <Row justify="center" style={{ position: "absolute", width: "100%", bottom: 10, zIndex: 1000 }}>
             {renderLegend()}
         </Row>

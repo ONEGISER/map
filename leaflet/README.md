@@ -1,2 +1,8 @@
 # 安装依赖
-`npm run a`
+`npm install`
+
+# 项目启动
+`npm start`
+
+# 项目发布
+`npm run build`
