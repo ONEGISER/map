@@ -9,9 +9,10 @@ export const Map = () => {
     useEffect(() => {
         mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA'
         const attribution = '&copy; <a href="https://gsjlxkgc.com/">甘肃记录小康工程</a> 提供数据'
+        // https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7.json?access_token=pk.eyJ1IjoibWFwYm94bWF4IiwiYSI6ImNqbnY4MHM3azA2ZmkzdnBnMThvNzRoZ28ifQ.IffqPZGkhcdPjnZ2dmSO6w
         const map = new mapboxgl.Map({
             container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/streets-v11', // style URL
+            style: 'mapbox://styles/mapbox/streets-zh-v1', // style URLmapbox://styles/mapbox/streets-v11
             center: [103.742546, 36.06], // starting position [lng, lat]
             zoom: 11,// starting zoom
             attributionControl: false
