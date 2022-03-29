@@ -28,7 +28,7 @@ export const Map = () => {
 
                 const lng = 103.8486246
                 const lat = 36.0573194
-                const radius = 110
+                const radius = 90
 
                 const view = new MapView({
                     map: map,

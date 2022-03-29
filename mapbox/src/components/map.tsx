@@ -4,6 +4,7 @@ import "./map.css"
 import { useEffect } from 'react';
 import axios from "axios";
 import mapboxgl from "mapbox-gl";
+import MapboxLanguage from '@mapbox/mapbox-gl-language';
 export const Map = () => {
     // const [value, setValue] = React.useState<string | number>('99');
     useEffect(() => {
@@ -12,11 +13,22 @@ export const Map = () => {
         // https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7.json?access_token=pk.eyJ1IjoibWFwYm94bWF4IiwiYSI6ImNqbnY4MHM3azA2ZmkzdnBnMThvNzRoZ28ifQ.IffqPZGkhcdPjnZ2dmSO6w
         const map = new mapboxgl.Map({
             container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/streets-zh-v1', // style URLmapbox://styles/mapbox/streets-v11
+            style: 'mapbox://styles/mapbox/streets-v11', //mapbox://styles/mapbox/light-v10 style URL  mapbox://styles/mapbox/streets-zh-v1
             center: [103.742546, 36.06], // starting position [lng, lat]
             zoom: 11,// starting zoom
             attributionControl: false
         })
+
+
+        const control = new MapboxLanguage({
+            defaultLanguage: 'en'
+        })
+        map.addControl(control)
+        setTimeout(() => {
+            const style = map.getStyle()
+            const style2 = control.setLanguage(style, 'zh-Hans')
+            map.setStyle(style2)
+        }, 20000);
 
         map.addControl(new mapboxgl.AttributionControl({
             customAttribution: attribution
