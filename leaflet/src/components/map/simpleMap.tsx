@@ -21,7 +21,6 @@ export const SimpleMap = () => {
             zoomOffset: 1,
             subdomains
         })
-
         const vecLayer = L.tileLayer("http://t{s}.tianditu.com/vec_c/wmts?layer=vec&style=default&tilematrixset=c&Service=WMTS&Request=GetTile&Version=1.0.0&Format=tiles&TileMatrix={z}&TileCol={x}&TileRow={y}&tk=" + key, {
             maxZoom: 18,
             tileSize: 256,
