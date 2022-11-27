@@ -14,7 +14,7 @@ export class TdtPoi {
     private start = 0
     private total = 0
     private datas = []
-    queryPoi(isInit: boolean, specify: string, dataTypes: string, keyWord: string, success: (datas: POIResults[], count: number, total: number) => void) {
+    queryPoi(isInit: boolean, specify: string, dataTypes: string, keyWord: string, key: string, success: (datas: POIResults[], count: number, total: number) => void) {
         if (isInit) {
             this.start = 0
             this.total = 0
@@ -42,7 +42,7 @@ export class TdtPoi {
                     obj.level = 18
                     obj.keyWord = keyWord
                 }
-                const url = `http://api.tianditu.gov.cn/v2/search?postStr=${JSON.stringify(obj)}&type=query&tk=${Keys.tdt}`
+                const url = `http://api.tianditu.gov.cn/v2/search?postStr=${JSON.stringify(obj)}&type=query&tk=${key}`
                 axios.get(url).then((results) => {
                     if (results.data) {
                         if (!this.total) {
@@ -55,7 +55,7 @@ export class TdtPoi {
                                 success(this.datas, this.datas.length, this.total)
                             const time = Math.random() * 10
                             setTimeout(() => {
-                                this.queryPoi(false, specify, dataTypes, keyWord, success)
+                                this.queryPoi(false, specify, dataTypes, keyWord, key, success)
                             }, time * 1000);
                         } else {
                             success(this.datas, this.datas.length, this.total)
