@@ -5,7 +5,6 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import newImage from "./img/new.jpg"
 import oldImage from "./img/old.jpg"
-import ReactJson from 'react-json-view'
 import { Alert, Link } from "@mui/material";
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import moment from "moment"
@@ -90,7 +89,7 @@ export class ArcgisDynamicData extends React.Component<ArcgisDynamicDataProps, A
                     })
                     newProperties[timeField] = year && replaceStr ? year.replace(replaceStr, "") : year
                     newProperties[resultField] = properties[year]
-                    const newFeature = { geometry: feature.geometry, properties: newProperties }
+                    const newFeature = { geometry: feature.geometry, properties: newProperties, "type": "Feature", }
                     newFeatures.push(newFeature)
                 });
             })
@@ -155,7 +154,6 @@ export class ArcgisDynamicData extends React.Component<ArcgisDynamicDataProps, A
                         </div>
                     </div>
                 </Alert>}
-                {Object.keys(newDatas).length > 0 && <div><Alert style={{ marginTop: 10 }} severity="info">预览数据</Alert> <ReactJson src={newDatas} /></div>}
             </div>
         </div >
     }
