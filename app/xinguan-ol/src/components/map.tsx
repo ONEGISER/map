@@ -142,6 +142,7 @@ export interface MapProps {
     zoom?: number
   }
   getColor?: (value: number) => void
+  popup?: boolean
 }
 export const Map = (props: MapProps) => {
   _getColor = props.getColor ? props.getColor : getColor
@@ -270,16 +271,19 @@ export const Map = (props: MapProps) => {
   }
 
   async function addLayer(map: OlMap,) {
-    // vectorLayer = new WebGLLayer({
-    //   source: vectorSource,
-    // });
-    //片区图层
-    vectorLayer = new VectorLayer({
-      properties: { layerId: "xinguan" },
-      source: vectorSource,
-      style: getStyle,
-      opacity: 0.6
-    });
+    if (props.popup) {
+      vectorLayer = new VectorLayer({
+        properties: { layerId: "xinguan" },
+        source: vectorSource,
+        style: getStyle,
+        opacity: 0.8
+      });
+    } else {
+      vectorLayer = new WebGLLayer({
+        source: vectorSource,
+      });
+    }
+
     map.addLayer(vectorLayer);
   }
 
@@ -331,27 +335,27 @@ export const Map = (props: MapProps) => {
 
 
     map.on('singleclick', async (e: any) => {
-      const features = map.forEachFeatureAtPixel(e.pixel, function (feature: any, layer: any) {
-        return {
-          feature: feature,
-          layer: layer
-        };
-      });
-      console.log(features);
-
+      // const features = map.forEachFeatureAtPixel(e.pixel, function (feature: any, layer: any) {
+      //   return {
+      //     feature: feature,
+      //     layer: layer
+      //   };
+      // });
       // const data = transform(e.coordinate, 'EPSG:3857', 'EPSG:4326')
       // console.log(data);
       if (isMapClick) {
         const features = map.getFeaturesAtPixel(e.pixel, { hitTolerance: 1 });
         console.log(features);
+        if (features && features[0]) {
+          const name = features[0]?.values_.name
+          console.log(currentDate,obj);
+          
+        }
 
         // const viewResolution = map.getView().getResolution()
         // const viewProjection = map.getView().getProjection();
         // const source = vectorLayer?.getSource()
         // const url = source?.getFeatureInfoUrl(e.coordinate, viewResolution, viewProjection, { INFO_FORMAT: 'application/json' })
-        const data = map.hasFeatureAtPixel(e.pixel)
-        console.log(data);
-
         if (map.hasFeatureAtPixel(e.pixel)) {
           // if (url) {
 
