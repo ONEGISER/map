@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>Mapbox Dataset on Arcgis-JS-API 4.4 WebTileLayer</title>
+
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.4/esri/css/main.css">
+    <script src="https://js.arcgis.com/4.4/"></script>
+
+    <script>
+        require([
+            "esri/config",
+            "esri/layers/WebTileLayer",
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/Graphic",
+            "esri/geometry/Point",
+            "esri/symbols/SimpleMarkerSymbol",
+            "dojo/request",
+            "dojo/dom",
+            "dojo/domReady!"
+        ], function (esriConfig, WebTileLayer, Map, MapView, Graphic, Point, SimpleMarkerSymbol, request, dom) {
+
+            var map = new Map({
+                ground: "world-elevation"
+            });
+
+            var view = new MapView({
+                container: "viewDiv",
+                map: map,
+                zoom: 11,
+                center: [-87.617, 41.859]
+            });
+
+            // Use the Mapbox "Integration URL for Arcgis" as a "urlTemplate" and create a web tile layer (esri/layers/WebTileLayer) from Arcgis-js-api 4.4
+
+            mapboxURL = "https://api.mapbox.com/styles/v1/chaitanyag/cj5j4sa6r0bii2rl6v4d6ocyp/tiles/256/{level}/{col}/{row}@2x?access_token=pk.eyJ1IjoiY2hhaXRhbnlhZyIsImEiOiJjajU3cjV4N2Uwcnd5MndwM25ibGppZTEwIn0.FvTnpRm0QuQltADauDuSkQ"
+
+            // If Using Mapbox Share URL & WMTS Endpoint, convert these URLs to Integration URL	
+
+            //mapboxURL = "https://api.mapbox.com/styles/v1/chaitanyag/cj5j4sa6r0bii2rl6v4d6ocyp.html?title=true&access_token=pk.eyJ1IjoiY2hhaXRhbnlhZyIsImEiOiJjajU3cjV4N2Uwcnd5MndwM25ibGppZTEwIn0.FvTnpRm0QuQltADauDuSkQ#10.8/41.862764/-87.612055/0"
+            //mapboxURL = "https://api.mapbox.com/styles/v1/chaitanyag/cj5j4sa6r0bii2rl6v4d6ocyp/wmts?access_token=pk.eyJ1IjoiY2hhaXRhbnlhZyIsImEiOiJjajU3cjV4N2Uwcnd5MndwM25ibGppZTEwIn0.FvTnpRm0QuQltADauDuSkQ"
+
+            mapboxToken = mapboxURL.split('token=')[1]; // Extract Mapbox Token from URL
+            // converting Share URL & WMTS Endpoint to Integration URL
+            if (mapboxURL.match(/\btitle\b/ig)) {
+                mapboxURL = mapboxURL.replace('.html?title=true&', '/tiles/256/{level}/{col}/{row}?');
+                mapboxToken = mapboxToken.split('#')[0]; // Extract Mapbox Token from Share URL
+            } else if (mapboxURL.match(/\bwmts\b/ig)) {
+                mapboxURL = mapboxURL.replace('wmts', 'tiles/256/{level}/{col}/{row}');
+            }
+            mapboxUser = mapboxURL.split("/")[5]; // Extract Mapbox User from Share URL
+            mapboxStyle = mapboxURL.split("/")[6]; // Extract Mapbox Style from Share URL
+
+            // Add mapbox url as Web tile Layer
+
+            var tiledLayer = new WebTileLayer({
+                urlTemplate: mapboxURL
+            });
+            map.add(tiledLayer);
+
+            /*Once mapboxURL is added as WebTileLayer, this will display the Mapbox style layer, but wont be able to display the popup content. 
+            Follow the steps below to fetch the data for that Mapbox style, so that we can interact with the data(like enabling popup content etc). */
+
+            // Using the below API, a JSON object can be fetched. Parse through JSON to fetch Mapbox Dataset ID
+            // Mapbox APIs can be found at https://www.mapbox.com/api-documentation/#introduction 
+
+            mapboxDatasetAPI = "https://api.mapbox.com/styles/v1/" + mapboxUser + "/" + mapboxStyle + "?access_token=" + mapboxToken;
+            request(mapboxDatasetAPI, {
+                headers: {
+                    "X-Requested-With": null
+                }
+            }).then(function (obj) {
+                var obj = JSON.parse(obj);
+                sourceURL = obj.sources.composite.url.split(",")[1];
+                mapboxDataId = sourceURL.substring(sourceURL.indexOf('.') + 1, sourceURL.indexOf("-"));
+
+                // Using the fetched Mapbox Dataset ID to create an API to fetch mapboxdata as a GeoJSON object
+
+                mapboxDataURL = "https://api.mapbox.com/datasets/v1/" + mapboxUser + "/" + mapboxDataId + "/features?access_token=" + mapboxToken;
+                request(mapboxDataURL, {
+                    headers: {
+                        "X-Requested-With": null
+                    }
+                }).then(function (obj) {
+                    var obj = JSON.parse(obj);
+
+                    // Create ESRI point graphics at every GeoJSON coordinate from 	Mapbox Dataset ID	
+
+                    for (var index = 0; index < obj.features.length; index++) {
+                        var item = obj.features[index];
+                        var point = new Point({
+                            longitude: item.geometry.coordinates[0],
+                            latitude: item.geometry.coordinates[1]
+                        });
+                        // Create a symbol for drawing the point
+                        var markerSymbol = new SimpleMarkerSymbol({
+                            color: [226, 119, 40, 0],
+                            outline: { // autocasts as new SimpleLineSymbol()
+                                color: [255, 255, 255, 0],
+                                width: 2
+                            }
+                        });
+                        // Create a graphic and add the geometry and symbol to it
+                        var pointGraphic = new Graphic({
+                            geometry: point,
+                            symbol: markerSymbol,
+                            attributes: item.properties,
+                            popupTemplate: { // autocasts as new PopupTemplate()
+                                //,title: "{Name}",
+                                content: '{*}'
+                            }
+                        });
+                        // Add point graphics to map, when clicked on the points popup is displayed*/
+                        view.graphics.add(pointGraphic);
+                    }
+                })
+            })
+        });
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>
