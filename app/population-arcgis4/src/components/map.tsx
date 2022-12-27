@@ -111,7 +111,7 @@ export class Map extends React.Component<MapProps, MapState>{
                     {
                         type: "text",
                         material: {
-                            color: "white"
+                            color: "black"
                         },
                         size: 8
                     } as any
@@ -136,10 +136,7 @@ export class Map extends React.Component<MapProps, MapState>{
                 title: "{name}",
                 content: [{
                     type: "fields",
-                    fieldInfos: [{
-                        fieldName: "NAME",
-                        label: "行政区名称"
-                    }, {
+                    fieldInfos: [ {
                         fieldName: "ENAME",
                         label: "行政区英文名称"
                     }, {
@@ -159,7 +156,7 @@ export class Map extends React.Component<MapProps, MapState>{
 
 
         const map = new EsriMap({
-            basemap: "dark-gray", //基础地图服务   可以选择"arcgis-topographic"
+            basemap: "arcgis-topographic", //基础地图服务   可以选择""dark-gray
             ground: "world-elevation", //高程服务
             layers: [popuLayer],
         });
