@@ -15,21 +15,10 @@ import { Chart } from "./chart";
 import { Col, Row, Spin } from "antd";
 import { Play } from "./play";
 
-export const GradeColors: { [key: string]: string } = {
-  '优': '#33cc33',
-  '良': '#60fae7',
-  '中': "#dfed73",
-  '次': "#ffc691",
-  '差': "#f95302",
-  '无': "#fde981"
-
-
-}
 const hostUrl = `http://xx.xx.xx.xx:8080`
 const provinceLayer = "hpa3:china_province"
 const xinguanLayer = "hpa3:xinguan2"
 const workspaace = "hpa3"
-const tk = "你的key"
 
 
 function getColors(color1: any, color2: any, colorLevel: number) {
@@ -51,7 +40,7 @@ function getColors(color1: any, color2: any, colorLevel: number) {
 const colors = getColors({ r: 182, g: 215, b: 0 }, { r: 153, g: 51, b: 0 }, 20)
 
 function getName(element: string) {
-  return element.replace("市", "").replace("省", "").replace("壮族", "").replace("自治区", "").replace("回族", "").replace("维吾尔", "").replace("特别行政区", "")
+  return element.replace("市", "").replace("省", "").replace("壮族", "").replace("自治区", "").replace("回族", "").replace("维吾尔", "").replace("特别行政区", "").replace("土家族苗族自治州", "")
 }
 
 function getColor(value: number) {
@@ -113,11 +102,20 @@ export class WebGLLayer extends Layer {
 let vectorLayer: any
 let map: any
 let vectorSource: any
-const view = new View({
-  center: transform([104.555, 36.379], 'EPSG:4326', 'EPSG:3857'),
-  zoom: 5
-})
-export const Map = () => {
+
+
+export interface MapProps {
+  provinceUrl?: string
+  xinguanUrl?: string
+  tk?: string
+  speed?: number
+  mapOption?: {
+    lng?: number
+    lat?: number
+    zoom?: number
+  }
+}
+export const Map = (props: MapProps) => {
   const [obj, setObj] = useState<any>(null)
   const [dates, setDates] = useState<any>([])
   const [provinces, setProvince] = useState<any>([])
@@ -130,14 +128,28 @@ export const Map = () => {
     const layer2 = "cva_w"
     const options = {
       source: new XYZ({
-        url: `${TdtUrl}/DataServer?T=${layer}&x={x}&y={y}&l={z}&tk=${tk}`,
+        url: `${TdtUrl}/DataServer?T=${layer}&x={x}&y={y}&l={z}&tk=${props.tk}`,
       })
     }
     const options2 = {
       source: new XYZ({
-        url: `${TdtUrl}/DataServer?T=${layer2}&x={x}&y={y}&l={z}&tk=${tk}`,
+        url: `${TdtUrl}/DataServer?T=${layer2}&x={x}&y={y}&l={z}&tk=${props.tk}`,
       })
     }
+
+
+    const { mapOption } = props
+
+    const lng = mapOption?.lng ? mapOption?.lng : 104.555
+    const lat = mapOption?.lat ? mapOption?.lat : 36.379
+    const zoom = mapOption?.zoom ? mapOption?.zoom : 5
+
+
+    const view = new View({
+      center: transform([lng, lat], 'EPSG:4326', 'EPSG:3857'),
+      zoom
+    })
+
     map = new OlMap({
       target: 'map',
       layers: [
@@ -215,7 +227,7 @@ export const Map = () => {
   function getLayerUrl() {
     // const host = hostUrl + `/geoserver/${workspaace}/ows`
     // return `${host}?service=WFS&version=1.0.0&request=GetFeature&typeName=${provinceLayer}&&outputFormat=application/json`
-    return "/province.json"
+    return props.provinceUrl ? props.provinceUrl : "/datas/province.json"
   }
 
   function getXinGuanLayerUrl() {
@@ -223,7 +235,7 @@ export const Map = () => {
     // const cql_filter = `1=1`
     // const url = `${host}?service=WFS&version=1.1.0&cql_filter=${cql_filter}&request=GetFeature&typename=${xinguanLayer}&outputFormat=application/json&srsname=EPSG:3857`
     // return url
-    return "/xinguan.json"
+    return props.xinguanUrl ? props.xinguanUrl : "/datas/xinguan.json"
   }
 
   async function addLayer(map: OlMap,) {
@@ -283,7 +295,7 @@ export const Map = () => {
     <Col style={{ width, height: "100%" }}>
       <div style={{ width: "100%", height: "100%", padding: 10 }}>
         <div style={{ width: "100%", height }}>
-          {dates.length > 0 && <Play dates={dates} currentDate={currentDate} onChange={onChange} />}
+          {dates.length > 0 && <Play speed={props.speed} dates={dates} currentDate={currentDate} onChange={onChange} />}
         </div>
         <div style={{ width: "100%", height: `calc(100% - ${height}px)` }}>
           <div style={{ width: "100%", height: "50%" }}>

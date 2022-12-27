@@ -5,6 +5,7 @@ export interface PlayProps {
     currentDate?: string
     dates: string[]
     onChange?: (date: string) => void
+    speed?: number
 }
 
 export interface PlayState {
@@ -37,8 +38,9 @@ export class Play extends React.Component<PlayProps, PlayState> {
     }
 
     playData() {
-        const { dates } = this.props
+        const { dates, speed } = this.props
         const { currentDate } = this.state
+        const _speed = speed ? speed : 1000
         if (dates) {
             let i: number = dates.findIndex((date: string) => {
                 return date === currentDate
@@ -61,7 +63,7 @@ export class Play extends React.Component<PlayProps, PlayState> {
                         } else {
                             play()
                         }
-                    }, 1000)
+                    }, _speed)
                 }
             }
             play()
