@@ -17,6 +17,7 @@ import { Play } from "./play";
 import { Overlay } from "ol";
 import { Vector as VectorLayer } from 'ol/layer'
 import { Fill, Style, Text, Stroke } from 'ol/style';
+import React from "react";
 
 const hostUrl = `http://xx.xx.xx.xx:8080`
 const provinceLayer = "hpa3:china_province"
@@ -126,9 +127,7 @@ function getStyle(feature: any) {
   return fillStyle;
 }
 
-let vectorLayer: any
-let map: any
-let vectorSource: any
+
 
 
 export interface MapProps {
@@ -144,31 +143,49 @@ export interface MapProps {
   getColor?: (value: number) => void
   popup?: boolean
 }
-export const Map = (props: MapProps) => {
-  _getColor = props.getColor ? props.getColor : getColor
-  const [obj, setObj] = useState<any>(null)
-  const [dates, setDates] = useState<any>([])
-  const [provinces, setProvince] = useState<any>([])
-  const [currentDate, setCurrentDate] = useState<string | undefined>()
-  const [loading, setLoading] = useState<boolean>(true)
 
-  useEffect(() => {
+export interface MapState {
+  obj?: any
+  dates?: any[]
+  provinces?: any[]
+  currentDate?: string
+  loading?: boolean
+}
+export class Map extends React.Component<MapProps, MapState>{
+  vectorLayer: any
+  map: any
+  vectorSource: any
+  isMapClick: boolean = true
+
+  constructor(props: MapProps) {
+    _getColor = props.getColor ? props.getColor : getColor
+    super(props)
+    this.state = {
+      obj: null,
+      dates: [],
+      provinces: [],
+      currentDate: undefined,
+      loading: true
+    }
+  }
+
+  componentDidMount(): void {
     const TdtUrl = 'https://t{0-7}.tianditu.gov.cn';
     const layer = "vec_w"
     const layer2 = "cva_w"
     const options = {
       source: new XYZ({
-        url: `${TdtUrl}/DataServer?T=${layer}&x={x}&y={y}&l={z}&tk=${props.tk}`,
+        url: `${TdtUrl}/DataServer?T=${layer}&x={x}&y={y}&l={z}&tk=${this.props.tk}`,
       })
     }
     const options2 = {
       source: new XYZ({
-        url: `${TdtUrl}/DataServer?T=${layer2}&x={x}&y={y}&l={z}&tk=${props.tk}`,
+        url: `${TdtUrl}/DataServer?T=${layer2}&x={x}&y={y}&l={z}&tk=${this.props.tk}`,
       })
     }
 
 
-    const { mapOption } = props
+    const { mapOption } = this.props
 
     const lng = mapOption?.lng ? mapOption?.lng : 104.555
     const lat = mapOption?.lat ? mapOption?.lat : 36.379
@@ -180,7 +197,7 @@ export const Map = (props: MapProps) => {
       zoom
     })
 
-    map = new OlMap({
+    this.map = new OlMap({
       target: 'map',
       layers: [
         new TileLayer(options),
@@ -191,25 +208,25 @@ export const Map = (props: MapProps) => {
 
 
 
-    vectorSource = new VectorSource({
-      url: getLayerUrl(),
+    this.vectorSource = new VectorSource({
+      url: this.getLayerUrl(),
       format: new GeoJSON(),
     })
-    queryDatas()
+    this.queryDatas()
 
-    addPopup()
-  }, [])
+    this.addPopup()
+  }
 
 
-  async function queryDatas() {
+  async queryDatas() {
     //查询所有的数据
-    const url = getXinGuanLayerUrl()
+    const url = this.getXinGuanLayerUrl()
     const datas = await (await fetch(url)).json()
 
     //查询所有的时间
-    const dates = queryDates(datas)
+    const dates = this.queryDates(datas)
     //查询所有的省级行政区划
-    const provinces = await queryProvinces()
+    const provinces = await this.queryProvinces()
     //构造数据
     const obj: { [key: string]: any } = {}
     datas?.features.forEach((element: any) => {
@@ -219,18 +236,20 @@ export const Map = (props: MapProps) => {
       }
       obj[properties.date][properties.name] = properties
     });
-    setObj(obj)
-    setDates(dates)
-    setProvince(provinces)
     let _currentDate = dates[dates.length - 1]
-    setCurrentDate(_currentDate)
-    _datas = getQzblDatas(_currentDate, dates, obj, provinces)
-    addLayer(map)
-    setLoading(false)
+    _datas = this.getQzblDatas(_currentDate, dates, obj, provinces)
+    this.addLayer(this.map)
+    this.setState({
+      loading: false,
+      currentDate: _currentDate,
+      provinces,
+      dates,
+      obj
+    })
   }
 
   //查询所有的时间
-  function queryDates(datas: any) {
+  queryDates(datas: any) {
     const dates: string[] = []
     if (datas.features) {
       datas.features.forEach((data: any) => {
@@ -242,8 +261,8 @@ export const Map = (props: MapProps) => {
     return Array.from(new Set(dates)).sort()
   }
 
-  async function queryProvinces() {
-    const url = getLayerUrl()
+  async queryProvinces() {
+    const url = this.getLayerUrl()
     const provinces: string[] = []
     const datas = await (await fetch(url)).json()
     datas?.features.forEach((data: any) => {
@@ -256,39 +275,39 @@ export const Map = (props: MapProps) => {
     return provinces
   }
 
-  function getLayerUrl() {
+  getLayerUrl() {
     // const host = hostUrl + `/geoserver/${workspaace}/ows`
     // return `${host}?service=WFS&version=1.0.0&request=GetFeature&typeName=${provinceLayer}&&outputFormat=application/json`
-    return props.provinceUrl ? props.provinceUrl : "/datas/province.json"
+    return this.props.provinceUrl ? this.props.provinceUrl : "/datas/province.json"
   }
 
-  function getXinGuanLayerUrl() {
+  getXinGuanLayerUrl() {
     // const host = hostUrl + "/geoserver/wfs"
     // const cql_filter = `1=1`
     // const url = `${host}?service=WFS&version=1.1.0&cql_filter=${cql_filter}&request=GetFeature&typename=${xinguanLayer}&outputFormat=application/json&srsname=EPSG:3857`
     // return url
-    return props.xinguanUrl ? props.xinguanUrl : "/datas/xinguan.json"
+    return this.props.xinguanUrl ? this.props.xinguanUrl : "/datas/xinguan.json"
   }
 
-  async function addLayer(map: OlMap,) {
-    if (props.popup) {
-      vectorLayer = new VectorLayer({
+  async addLayer(map: OlMap,) {
+    if (this.props.popup) {
+      this.vectorLayer = new VectorLayer({
         properties: { layerId: "xinguan" },
-        source: vectorSource,
+        source: this.vectorSource,
         style: getStyle,
         opacity: 0.8
       });
     } else {
-      vectorLayer = new WebGLLayer({
-        source: vectorSource,
+      this.vectorLayer = new WebGLLayer({
+        source: this.vectorSource,
       });
     }
 
-    map.addLayer(vectorLayer);
+    map.addLayer(this.vectorLayer);
   }
 
 
-  function getDatas(date: string, index: string, dates?: string[], obj?: any, provinces?: any) {
+  getDatas(date: string, index: string, dates?: string[], obj?: any, provinces?: any) {
     const datas: number[] = []
     const dataObj: { [key: string]: string } = {}
     if (date && obj && dates && dates.length > 0 && provinces.length > 0) {
@@ -307,7 +326,7 @@ export const Map = (props: MapProps) => {
   }
 
 
-  function addPopup() {
+  addPopup() {
     const container: any = document.getElementById('popup');
     const content: any = document.getElementById('popup-content');
     const closer: any = document.getElementById('popup-closer');
@@ -316,105 +335,51 @@ export const Map = (props: MapProps) => {
       autoPan: true,
       positioning: 'bottom-center',
       stopEvent: false,
-      autoPanAnimation: {
-        duration: 250
-      }
     } as any);
-    map.addOverlay(overlay);
+
+    this.map.addOverlay(overlay);
     const close = () => {
       overlay.setPosition(undefined);
       closer.blur();
       content.style.display = "none"
+      setTimeout(() => {
+        self.isMapClick = true
+      }, 500);
       return false;
     }
     closer.onclick = function () {
+      self.isMapClick = false
       close()
     };
 
-    let isMapClick: boolean = true
 
-
-    map.on('singleclick', async (e: any) => {
-      // const features = map.forEachFeatureAtPixel(e.pixel, function (feature: any, layer: any) {
-      //   return {
-      //     feature: feature,
-      //     layer: layer
-      //   };
-      // });
-      // const data = transform(e.coordinate, 'EPSG:3857', 'EPSG:4326')
-      // console.log(data);
-      if (isMapClick) {
-        const features = map.getFeaturesAtPixel(e.pixel, { hitTolerance: 1 });
-        console.log(features);
-        if (features && features[0]) {
-          const name = features[0]?.values_.name
-          console.log(currentDate,obj);
-          
-        }
-
-        // const viewResolution = map.getView().getResolution()
-        // const viewProjection = map.getView().getProjection();
-        // const source = vectorLayer?.getSource()
-        // const url = source?.getFeatureInfoUrl(e.coordinate, viewResolution, viewProjection, { INFO_FORMAT: 'application/json' })
-        if (map.hasFeatureAtPixel(e.pixel)) {
-          // if (url) {
-
-          // }
-        } else {
-          // if (url) {
-          //     const data = await (await fetch(url, { method: "GET" })).json()
-          //     if (data) {
-          //         const features = new GeoJSON().readFeatures(data)
-          //         if (features?.length > 0) {
-          //             // this.setState({ data: features }, () => {
-          //             //     //字段会发生变化
-          //             //     const feature: any = features[0]
-          //             //     const _value = feature.values_
-          //             //     const coordinate = e.coordinate;
-          //             //     const nature = _value.Nature ? (natureObj ? natureObj[_value.Nature].name : _value.Nature) : ""
-          //             //     // const level = _value.level ? (levelObj ? levelObj[_value.level].name : _value.level) : ""
-          //             //     const code = _value.Code ? _value.Code : ""
-          //             //     // let remarks = _value.remarks ? _value.remarks : ""
-          //             //     // let lane = _value.lane
-          //             //     // if (lane) {
-          //             //     //     if (lane === "A") {
-          //             //     //         lane = "上行"
-          //             //     //     } else if (lane === "B") {
-          //             //     //         lane = "下行"
-          //             //     //     }
-          //             //     // } else {
-          //             //     //     lane = "全幅"
-          //             //     // }
-          //             //     // 技术等级：${level}<br/>// 管养单位：${remarks}<br/>车道类型：${lane}<br/>
-          //             //     content.style.display = "block"
-          //             //     content.innerHTML = `
-          //             //     路线性质：${nature}<br/>
-          //             //     路线编码：${code}<br/>
-          //             //     <div style="width:100%;"> <a style="width:100%;justify-content:end;display:flex;" id="zoomTo-self">缩放至</a></div>
-          //             // `;
-          //             //     const zoomContainer: any = document.getElementById('zoomTo-self');
-          //             //     let self = this
-          //             //     zoomContainer.onclick = function (e: any) {
-          //             //         isMapClick = false
-          //             //         if (e) {
-          //             //             e.stopPropagation()
-          //             //             e.preventDefault()
-          //             //         }
-          //             //         if (feature)
-          //             //             self.flyFeatures([feature])
-          //             //         setTimeout(() => {
-          //             //             isMapClick = true
-          //             //         }, 1000);
-          //             //         return false;
-          //             //     };
-          //             //     overlay.setPosition(coordinate);
-          //             //     this.flyFeatures(features, true)
-          //             //     return
-          //             // })
-
-          //         }
-          //     }
-          // }
+    let self = this
+    this.map.on('singleclick', async (e: any) => {
+      const coordinate = e.coordinate;
+      const { currentDate, obj } = self.state
+      if (self.isMapClick) {
+        if (this.map.hasFeatureAtPixel(e.pixel)) {
+          const features = this.map.getFeaturesAtPixel(e.pixel, { hitTolerance: 1 });
+          if (features && features[0]) {
+            const name = features[0]?.values_.name
+            if (currentDate) {
+              const data = obj[currentDate]
+              const _name = getName(name)
+              const prop = data[_name]
+              if (prop) {
+                content.style.display = "block"
+                content.innerHTML = `
+                  名称：${prop.name}<br/>
+                  日期：${prop.date}<br/>
+                  新增确诊病例：${prop.xzqzbl}<br/>
+                  累计确诊病例：${prop.ljqzbl}<br/>
+                  累计死亡病例：${prop.ljzy}<br/>
+                  累计治愈病例：${prop.ljsw}<br/>
+                  `;
+                overlay.setPosition(coordinate);
+              }
+            }
+          }
         }
       } else {
         close()
@@ -423,54 +388,62 @@ export const Map = (props: MapProps) => {
   }
 
 
-  function getSwblDatas(_currentDate?: string, dates?: string[], obj?: any, provinces?: any) {
-    return _currentDate ? getDatas(_currentDate, "ljsw", dates, obj, provinces) : { datas: [] }
+  getSwblDatas(_currentDate?: string, dates?: string[], obj?: any, provinces?: any) {
+    return _currentDate ? this.getDatas(_currentDate, "ljsw", dates, obj, provinces) : { datas: [] }
   }
 
-  function getQzblDatas(_currentDate?: string, dates?: string[], obj?: any, provinces?: any) {
-    return _currentDate ? getDatas(_currentDate, "ljqzbl", dates, obj, provinces) : { datas: [] }
+  getQzblDatas(_currentDate?: string, dates?: string[], obj?: any, provinces?: any) {
+    return _currentDate ? this.getDatas(_currentDate, "ljqzbl", dates, obj, provinces) : { datas: [] }
   }
 
-  function onChange(date: string) {
-    setCurrentDate(date)
-    _datas = getQzblDatas(date, dates, obj, provinces)
-    vectorLayer?.getSource().changed()
+  onChange(date: string) {
+    const { dates, provinces, obj } = this.state
+    this.setState({
+      currentDate: date
+    })
+    _datas = this.getQzblDatas(date, dates, obj, provinces)
+    this.vectorLayer?.getSource().changed()
   }
 
-  const swblDatas = getSwblDatas(currentDate, dates, obj, provinces)
-  const qzblDatas = getQzblDatas(currentDate, dates, obj, provinces)
-  const height = 40
-  const width = 400
-  return <Row style={{ width: "100%", height: "100%", overflow: "hidden", position: "relative" }}>
-    <div id="popup" className="ol-popup">
-      <a href="#" id="popup-closer" className="ol-popup-closer"></a>
-      <div id="popup-content"></div>
-    </div>
-    <Col style={{ width: `calc(100% - ${width}px)`, height: "100%", position: "relative" }}>
-      <div className="lmap" id="map">
+  render(): React.ReactNode {
+    const { currentDate, loading, dates, provinces, obj } = this.state
+    const swblDatas = this.getSwblDatas(currentDate, dates, obj, provinces)
+    const qzblDatas = this.getQzblDatas(currentDate, dates, obj, provinces)
+    const height = 40
+    const width = 400
 
+
+    return <Row style={{ width: "100%", height: "100%", overflow: "hidden", position: "relative" }}>
+      <div id="popup" className="ol-popup">
+        <a href="#" id="popup-closer" className="ol-popup-closer"></a>
+        <div id="popup-content"></div>
       </div>
-      <Row justify={"center"} style={{ width: "100%", position: "absolute", top: 10, }}>
-        <h1 style={{ backgroundColor: "#fff", padding: 10 }}>累计确诊病例</h1>
-      </Row>
-    </Col>
-    <Col style={{ width, height: "100%" }}>
-      <div style={{ width: "100%", height: "100%", padding: 10 }}>
-        <div style={{ width: "100%", height }}>
-          {dates.length > 0 && <Play speed={props.speed} dates={dates} currentDate={currentDate} onChange={onChange} />}
-        </div>
-        <div style={{ width: "100%", height: `calc(100% - ${height}px)` }}>
-          <div style={{ width: "100%", height: "50%" }}>
-            {currentDate && <Chart name={"累计确诊病例"} data={qzblDatas?.datas} time={currentDate} yAxisDatas={provinces} color={"orange"} />}
-          </div>
-          <div style={{ width: "100%", height: "50%" }}>
-            {currentDate && <Chart name={"累计死亡病例"} data={swblDatas?.datas} time={currentDate} yAxisDatas={provinces} color={"red"} />}
-          </div>
-        </div>
-      </div>
-    </Col>
-    <Spin spinning={loading} tip={"正在加载数据......"} style={{ position: "absolute", top: "45%", left: "48%" }}>
+      <Col style={{ width: `calc(100% - ${width}px)`, height: "100%", position: "relative" }}>
+        <div className="lmap" id="map">
 
-    </Spin>
-  </Row >
+        </div>
+        <Row justify={"center"} style={{ width: "100%", position: "absolute", top: 10, }}>
+          <h1 style={{ backgroundColor: "#fff", padding: 10 }}>累计确诊病例</h1>
+        </Row>
+      </Col>
+      <Col style={{ width, height: "100%" }}>
+        <div style={{ width: "100%", height: "100%", padding: 10 }}>
+          <div style={{ width: "100%", height }}>
+            {dates && dates.length > 0 && <Play speed={this.props.speed} dates={dates} currentDate={currentDate} onChange={this.onChange.bind(this)} />}
+          </div>
+          <div style={{ width: "100%", height: `calc(100% - ${height}px)` }}>
+            <div style={{ width: "100%", height: "50%" }}>
+              {currentDate && <Chart name={"累计确诊病例"} data={qzblDatas?.datas} time={currentDate} yAxisDatas={provinces} color={"orange"} />}
+            </div>
+            <div style={{ width: "100%", height: "50%" }}>
+              {currentDate && <Chart name={"累计死亡病例"} data={swblDatas?.datas} time={currentDate} yAxisDatas={provinces} color={"red"} />}
+            </div>
+          </div>
+        </div>
+      </Col>
+      <Spin spinning={loading} tip={"正在加载数据......"} style={{ position: "absolute", top: "45%", left: "48%" }}>
+
+      </Spin>
+    </Row >
+  }
 };
