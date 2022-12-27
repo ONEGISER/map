@@ -15,6 +15,8 @@ import { Chart } from "./chart";
 import { Col, Row, Spin } from "antd";
 import { Play } from "./play";
 import { Overlay } from "ol";
+import { Vector as VectorLayer } from 'ol/layer'
+import { Fill, Style, Text, Stroke } from 'ol/style';
 
 const hostUrl = `http://xx.xx.xx.xx:8080`
 const provinceLayer = "hpa3:china_province"
@@ -38,14 +40,15 @@ function getColors(color1: any, color2: any, colorLevel: number) {
   return colors;
 }
 
-const colors = getColors({ r: 182, g: 215, b: 0 }, { r: 153, g: 51, b: 0 }, 20)
+export const colors = getColors({ r: 182, g: 215, b: 0 }, { r: 153, g: 51, b: 0 }, 20)
 
 function getName(element: string) {
   return element.replace("市", "").replace("省", "").replace("壮族", "").replace("自治区", "").replace("回族", "").replace("维吾尔", "").replace("特别行政区", "").replace("土家族苗族自治州", "")
 }
 
+
 function getColor(value: number) {
-  let color
+  let color: any
   if (value > 10000) {
     color = { r: 255, g: 0, b: 0 }
   } else if (value > 5000) {
@@ -59,7 +62,11 @@ function getColor(value: number) {
   return color
 }
 
+
+
 let _datas: any = {}
+let _getColor: any
+
 export class WebGLLayer extends Layer {
   createRenderer(): any {
     let self: any = this
@@ -72,7 +79,7 @@ export class WebGLLayer extends Layer {
               const _name = feature.values_?.name
               const name = getName(_name)
               const value = _datas?.dataObj[name]
-              const tempColor = getColor(value)
+              const tempColor = _getColor(value)
               if (tempColor) {
                 color = tempColor
               }
@@ -98,7 +105,26 @@ export class WebGLLayer extends Layer {
     }) as any
   }
 }
-
+function getStyle(feature: any) {
+  const fillStyle = new Style({
+    fill: new Fill({
+      color: '#eeeeee',
+    }),
+    stroke: new Stroke({
+      width: 1,
+      color: '#fff',
+    })
+  });
+  if (feature.values_) {
+    const _name = feature.values_?.name
+    const name = getName(_name)
+    const value = _datas?.dataObj[name]
+    const color = _getColor(value)
+    const _color = [color.r, color.g, color.b, color.a]
+    fillStyle.getFill().setColor(_color);
+  }
+  return fillStyle;
+}
 
 let vectorLayer: any
 let map: any
@@ -115,8 +141,10 @@ export interface MapProps {
     lat?: number
     zoom?: number
   }
+  getColor?: (value: number) => void
 }
 export const Map = (props: MapProps) => {
+  _getColor = props.getColor ? props.getColor : getColor
   const [obj, setObj] = useState<any>(null)
   const [dates, setDates] = useState<any>([])
   const [provinces, setProvince] = useState<any>([])
@@ -242,8 +270,15 @@ export const Map = (props: MapProps) => {
   }
 
   async function addLayer(map: OlMap,) {
-    vectorLayer = new WebGLLayer({
+    // vectorLayer = new WebGLLayer({
+    //   source: vectorSource,
+    // });
+    //片区图层
+    vectorLayer = new VectorLayer({
+      properties: { layerId: "xinguan" },
       source: vectorSource,
+      style: getStyle,
+      opacity: 0.6
     });
     map.addLayer(vectorLayer);
   }
@@ -296,7 +331,7 @@ export const Map = (props: MapProps) => {
 
 
     map.on('singleclick', async (e: any) => {
-      const features = map.forEachFeatureAtPixel(e.pixel, function (feature:any, layer:any) {
+      const features = map.forEachFeatureAtPixel(e.pixel, function (feature: any, layer: any) {
         return {
           feature: feature,
           layer: layer
