@@ -127,6 +127,15 @@ function getStyle(feature: any) {
   return fillStyle;
 }
 
+function getHightStyle() {
+  const color: any = { r: 0, g: 255, b: 255, a: 0.8 };
+  const fillStyle = new Style({
+    fill: new Fill({
+      color: [color.r, color.g, color.b, color.a]
+    }),
+  });
+  return fillStyle
+}
 
 
 
@@ -156,7 +165,8 @@ export class Map extends React.Component<MapProps, MapState>{
   map: any
   vectorSource: any
   isMapClick: boolean = true
-
+  highFeature: any
+  layerId = "xinguan"
   constructor(props: MapProps) {
     _getColor = props.getColor ? props.getColor : getColor
     super(props)
@@ -292,7 +302,7 @@ export class Map extends React.Component<MapProps, MapState>{
   async addLayer(map: OlMap,) {
     if (this.props.popup) {
       this.vectorLayer = new VectorLayer({
-        properties: { layerId: "xinguan" },
+        properties: { layerId: this.layerId },
         source: this.vectorSource,
         style: getStyle,
         opacity: 0.8
@@ -304,6 +314,31 @@ export class Map extends React.Component<MapProps, MapState>{
     }
 
     map.addLayer(this.vectorLayer);
+
+    //标记图层
+    const style = new Style({
+      text: new Text({
+        font: 'bold 12px "Open Sans", "Arial Unicode MS", "sans-serif"',
+        fill: new Fill({
+          color: 'black',
+        }),
+      }),
+    });
+
+    const vectorSource2 = new VectorSource({
+      url: this.getLayerUrl(),
+      format: new GeoJSON(),
+    })
+
+    const labelLayer = new VectorLayer({
+      declutter: true,
+      source: vectorSource2,
+      style: function (feature) {
+        style.getText().setText(feature.get('name'));
+        return style;
+      },
+    })
+    this?.map.addLayer(labelLayer);
   }
 
 
@@ -369,7 +404,7 @@ export class Map extends React.Component<MapProps, MapState>{
               if (prop) {
                 content.style.display = "block"
                 content.innerHTML = `
-                  名称：${prop.name}<br/>
+                  名称：${name}<br/>
                   日期：${prop.date}<br/>
                   新增确诊病例：${prop.xzqzbl}<br/>
                   累计确诊病例：${prop.ljqzbl}<br/>
@@ -385,7 +420,26 @@ export class Map extends React.Component<MapProps, MapState>{
         close()
       }
     });
+
+    this.map.on('pointermove', function (evt: any) {
+      const features = self.map.forEachFeatureAtPixel(evt.pixel, function (feature: any, layer: any) {
+        return {
+          feature: feature,
+          layer: layer
+        };
+      });
+      if (self.highFeature) {
+        self.highFeature.setStyle(getStyle(self.highFeature))
+        self.highFeature = null
+      }
+      const layer: any = features?.layer
+      if (features && layer && layer?.values_.layerId === self.layerId) {
+        self.highFeature = features.feature;
+        self.highFeature.setStyle(getHightStyle())
+      }
+    })
   }
+
 
 
   getSwblDatas(_currentDate?: string, dates?: string[], obj?: any, provinces?: any) {
