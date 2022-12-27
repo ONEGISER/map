@@ -14,6 +14,7 @@ import { packColor } from 'ol/renderer/webgl/shaders';
 import { Chart } from "./chart";
 import { Col, Row, Spin } from "antd";
 import { Play } from "./play";
+import { Overlay } from "ol";
 
 const hostUrl = `http://xx.xx.xx.xx:8080`
 const provinceLayer = "hpa3:china_province"
@@ -160,11 +161,14 @@ export const Map = (props: MapProps) => {
     });
 
 
+
     vectorSource = new VectorSource({
       url: getLayerUrl(),
       format: new GeoJSON(),
     })
     queryDatas()
+
+    addPopup()
   }, [])
 
 
@@ -172,7 +176,6 @@ export const Map = (props: MapProps) => {
     //查询所有的数据
     const url = getXinGuanLayerUrl()
     const datas = await (await fetch(url)).json()
-    console.log(datas);
 
     //查询所有的时间
     const dates = queryDates(datas)
@@ -265,6 +268,122 @@ export const Map = (props: MapProps) => {
   }
 
 
+  function addPopup() {
+    const container: any = document.getElementById('popup');
+    const content: any = document.getElementById('popup-content');
+    const closer: any = document.getElementById('popup-closer');
+    const overlay = new Overlay({
+      element: container,
+      autoPan: true,
+      positioning: 'bottom-center',
+      stopEvent: false,
+      autoPanAnimation: {
+        duration: 250
+      }
+    } as any);
+    map.addOverlay(overlay);
+    const close = () => {
+      overlay.setPosition(undefined);
+      closer.blur();
+      content.style.display = "none"
+      return false;
+    }
+    closer.onclick = function () {
+      close()
+    };
+
+    let isMapClick: boolean = true
+
+
+    map.on('singleclick', async (e: any) => {
+      const features = map.forEachFeatureAtPixel(e.pixel, function (feature:any, layer:any) {
+        return {
+          feature: feature,
+          layer: layer
+        };
+      });
+      console.log(features);
+
+      // const data = transform(e.coordinate, 'EPSG:3857', 'EPSG:4326')
+      // console.log(data);
+      if (isMapClick) {
+        const features = map.getFeaturesAtPixel(e.pixel, { hitTolerance: 1 });
+        console.log(features);
+
+        // const viewResolution = map.getView().getResolution()
+        // const viewProjection = map.getView().getProjection();
+        // const source = vectorLayer?.getSource()
+        // const url = source?.getFeatureInfoUrl(e.coordinate, viewResolution, viewProjection, { INFO_FORMAT: 'application/json' })
+        const data = map.hasFeatureAtPixel(e.pixel)
+        console.log(data);
+
+        if (map.hasFeatureAtPixel(e.pixel)) {
+          // if (url) {
+
+          // }
+        } else {
+          // if (url) {
+          //     const data = await (await fetch(url, { method: "GET" })).json()
+          //     if (data) {
+          //         const features = new GeoJSON().readFeatures(data)
+          //         if (features?.length > 0) {
+          //             // this.setState({ data: features }, () => {
+          //             //     //字段会发生变化
+          //             //     const feature: any = features[0]
+          //             //     const _value = feature.values_
+          //             //     const coordinate = e.coordinate;
+          //             //     const nature = _value.Nature ? (natureObj ? natureObj[_value.Nature].name : _value.Nature) : ""
+          //             //     // const level = _value.level ? (levelObj ? levelObj[_value.level].name : _value.level) : ""
+          //             //     const code = _value.Code ? _value.Code : ""
+          //             //     // let remarks = _value.remarks ? _value.remarks : ""
+          //             //     // let lane = _value.lane
+          //             //     // if (lane) {
+          //             //     //     if (lane === "A") {
+          //             //     //         lane = "上行"
+          //             //     //     } else if (lane === "B") {
+          //             //     //         lane = "下行"
+          //             //     //     }
+          //             //     // } else {
+          //             //     //     lane = "全幅"
+          //             //     // }
+          //             //     // 技术等级：${level}<br/>// 管养单位：${remarks}<br/>车道类型：${lane}<br/>
+          //             //     content.style.display = "block"
+          //             //     content.innerHTML = `
+          //             //     路线性质：${nature}<br/>
+          //             //     路线编码：${code}<br/>
+          //             //     <div style="width:100%;"> <a style="width:100%;justify-content:end;display:flex;" id="zoomTo-self">缩放至</a></div>
+          //             // `;
+          //             //     const zoomContainer: any = document.getElementById('zoomTo-self');
+          //             //     let self = this
+          //             //     zoomContainer.onclick = function (e: any) {
+          //             //         isMapClick = false
+          //             //         if (e) {
+          //             //             e.stopPropagation()
+          //             //             e.preventDefault()
+          //             //         }
+          //             //         if (feature)
+          //             //             self.flyFeatures([feature])
+          //             //         setTimeout(() => {
+          //             //             isMapClick = true
+          //             //         }, 1000);
+          //             //         return false;
+          //             //     };
+          //             //     overlay.setPosition(coordinate);
+          //             //     this.flyFeatures(features, true)
+          //             //     return
+          //             // })
+
+          //         }
+          //     }
+          // }
+        }
+      } else {
+        close()
+      }
+    });
+  }
+
+
   function getSwblDatas(_currentDate?: string, dates?: string[], obj?: any, provinces?: any) {
     return _currentDate ? getDatas(_currentDate, "ljsw", dates, obj, provinces) : { datas: [] }
   }
@@ -284,6 +403,10 @@ export const Map = (props: MapProps) => {
   const height = 40
   const width = 400
   return <Row style={{ width: "100%", height: "100%", overflow: "hidden", position: "relative" }}>
+    <div id="popup" className="ol-popup">
+      <a href="#" id="popup-closer" className="ol-popup-closer"></a>
+      <div id="popup-content"></div>
+    </div>
     <Col style={{ width: `calc(100% - ${width}px)`, height: "100%", position: "relative" }}>
       <div className="lmap" id="map">
 
