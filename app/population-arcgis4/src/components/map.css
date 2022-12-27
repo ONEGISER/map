@@ -1,2 +1,10 @@
-
 @import "@arcgis/core/assets/esri/themes/dark/main.css";
+
+.scale {
+    position: absolute;
+    bottom: 30px;
+    left: 10px;
+    background-color: #242424;
+    color: #fff;
+    padding: 20px;
+}

@@ -7,115 +7,103 @@ import * as webMercatorUtils from "@arcgis/core/geometry/support/webMercatorUtil
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer"
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer"
 import LabelClass from "@arcgis/core/layers/support/LabelClass"
-export const Map = () => {
-    useEffect(() => {
-        const map = new EsriMap({
-            basemap: "dark-gray",
-        });
+import GeoJSONLayer from "@arcgis/core/layers/GeoJSONLayer"
+import PolygonSymbol3D from "@arcgis/core/symbols/PolygonSymbol3D"
+import ExtrudeSymbol3DLayer from "@arcgis/core/symbols/ExtrudeSymbol3DLayer"
+import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer"
+import esriConfig from "@arcgis/core/config"
+import Legend from "@arcgis/core/widgets/Legend"
+import ScaleBar from "@arcgis/core/widgets/ScaleBar";
+import React from "react";
+import { Col, Row } from "antd";
 
-        const view = new SceneView({
-            container: "map",
-            map: map,
-            camera: {
-                position: {
-                    spatialReference: { wkid: 102100 },
-                    x: -8238359,
-                    y: 4967229,
-                    z: 686
-                },
-                heading: 353,
-                tilt: 66
-            }
-        });
+export interface MapProps {
 
-        // const symbol = {
-        //     type: "picture-marker",
-        //     url: "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=1337419192,366595857&fm=26&gp=0.jpg",
-        //     width: "50px",
-        //     height: "50px",
-        //     outline: {
-        //         style: "solid"
-        //     },
-        // };
+}
+export interface MapState {
+    /**比例尺 */
+    scale?: string
+    /**
+     * 经纬度
+     */
+    lnglat?: {
+        lng?: string
+        lat?: string
+    }
+}
+export class Map extends React.Component<MapProps, MapState>{
+    constructor(props: MapProps) {
+        super(props)
+        this.state = {
+            scale: "",
+            lnglat: {}
+        }
+    }
+    componentDidMount(): void {
+        this.init()
+    }
 
-        const point1: any = {
-            type: "point",
-            x: -74.01,
-            y: 40.71,
-            z: 0,
-            SpatialReference: 4326
-        };
 
-        const symbol1 = {
-            angle: 90,
-            type: "text",
-            color: "white",
-            text: "兰州",
-            xoffset: 100,
-            yoffset: 100, //3d地图不起作用
-            font: {
-                size: 12,
+    init() {
+        esriConfig.apiKey = "AAPK449340f85b664e6b802d2d0e65eb4849vlSII8YqKpEj5Fn0hCy2qr4QyOAZRZSB6XWDc2-X8pFlNoRYoQoetUvFs1Y_JVKL"
+
+        //渲染图层的方法
+        const renderer: any = {
+            type: "simple", // autocasts as new SimpleRenderer()
+            symbol: {
+                type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+                symbolLayers: [
+                    {
+                        type: "extrude" // autocasts as new ExtrudeSymbol3DLayer()
+                    }
+                ]
             },
-        };
-
-        const symbol2: any = {
-            type: "point-3d",
-            symbolLayers: [
+            visualVariables: [
                 {
-                    type: "icon",
-                    size: 12,
-                    resource: {
-                        primitive: "square"
+                    type: "size",
+                    field: "POPU",
+                    legendOptions: {
+                        title: "人口（万人）"
                     },
-                    material: {
-                        color: "orange"
+                    stops: [
+                        {
+                            value: 1,
+                            size: 100,
+                        },
+                        {
+                            value: 300,
+                            size: 30000,
+                        }
+                    ]
+                },
+                {
+                    type: "color",
+                    field: "DENSITY",
+                    legendOptions: {
+                        title: "人口密度（人/km²）"
                     },
-                    outline: {
-                        color: "white",
-                        size: 1
-                    }
+                    stops: [
+                        {
+                            value: 100,
+                            color: "#33ffff",
+                            label: '100',
+                        },
+                        {
+                            value: 2300,
+                            color: [51, 0, 255],
+                            label: '2300',
+                        },
+                        {
+                            value: 16000,
+                            color: [255, 0, 0],
+                            label: '16000',
+                        }
+                    ]
                 }
             ]
         };
 
-        const graphicsLayer = new GraphicsLayer()
-        const pointGraphic1 = new Graphic({
-            geometry: point1,
-            symbol: symbol1,
-        });
-        const pointGraphic2 = new Graphic({
-            geometry: point1,
-            symbol: symbol2,
-        });
-        graphicsLayer.add(pointGraphic2);
-        graphicsLayer.add(pointGraphic1);
-        map.add(graphicsLayer);
-
-        const iconSymbol = {
-            type: "point-3d", // autocasts as new PointSymbol3D()
-            symbolLayers: [
-                {
-                    type: "icon", // autocasts as new IconSymbol3DLayer()
-                    size: 12,
-                    resource: {
-                        primitive: "square"
-                    },
-                    material: {
-                        color: "orange"
-                    },
-                    outline: {
-                        color: "white",
-                        size: 1
-                    }
-                }
-            ]
-        };
-
-        const iconSymbolRenderer: any = {
-            type: "simple",
-            symbol: iconSymbol,
-        };
-
+        //图层标注
         const labelClass = new LabelClass({
             symbol: {
                 type: "label-3d",
@@ -125,55 +113,162 @@ export const Map = () => {
                         material: {
                             color: "white"
                         },
-                        size: 10
+                        size: 8
                     } as any
                 ]
             },
             labelPlacement: "above-center",
             labelExpressionInfo: {
-                expression: 'DefaultValue($feature.place, "no data")'
+                expression: 'DefaultValue($feature.NAME, "no data")'
             }
         });
-        const point = {
-            type: "point",
-            x: -74.00897626922108,
-            y: 40.70374571999779,
-            SpatialReference: 4326
-        };
-        const pointGraphic = new Graphic({
-            geometry: point,
-            attributes: {
-                place: "兰州"
+
+        // 人口图层，以geojson图层加载
+        const popuLayer = new GeoJSONLayer({
+            id: "人口",
+            url: "/datas/shandongpopu.geojson",//数据路径
+            renderer: renderer,
+            labelingInfo: [labelClass],
+            elevationInfo: {
+                mode: "on-the-ground"
+            },
+            popupTemplate: {
+                title: "{name}",
+                content: [{
+                    type: "fields",
+                    fieldInfos: [{
+                        fieldName: "NAME",
+                        label: "行政区名称"
+                    }, {
+                        fieldName: "ENAME",
+                        label: "行政区英文名称"
+                    }, {
+                        fieldName: "POPU",
+                        label: "人口（万人）"
+                    }, {
+                        fieldName: "AREA",
+                        label: "行政区面积(m²)"
+                    }, {
+                        fieldName: "DENSITY",
+                        label: "人口密度（人/km²）"
+                    }]
+                }]
+            },
+            outFields: ["objectid", "code", "name", "type", "length", "yearcomple", "catagory"]
+        });
+
+
+        const map = new EsriMap({
+            basemap: "dark-gray", //基础地图服务   可以选择"arcgis-topographic"
+            ground: "world-elevation", //高程服务
+            layers: [popuLayer],
+        });
+
+        const view = new SceneView({
+            container: "map",
+            map: map,
+            camera: {
+                position: {
+                    spatialReference: { wkid: 102100 },
+                    x: 12964061.149533136,
+                    y: 3447251.4087446583,
+                    z: 819505.7301032562
+                },
+                heading: 9.384510690778026,
+                tilt: 40.21595521917268
             }
-        } as any);
-
-        const featureLayer = new FeatureLayer({
-            source: [pointGraphic],
-            renderer: iconSymbolRenderer,
-            outFields: ["place"],
-            maxScale: 0,
-            minScale: 0,
-            fields: [{
-                name: "ObjectID",
-                alias: "ObjectID",
-                type: "oid"
-            }, {
-                name: "place",
-                alias: "Place",
-                type: "string"
-            }],
-            objectIdField: "ObjectID",
-            geometryType: "point",
-            labelingInfo: [labelClass]
         });
-        map.add(featureLayer);
 
-        view.on("click", function (e) {
-            const geom = webMercatorUtils.xyToLngLat(e.mapPoint.x, e.mapPoint.y);
-            console.log(geom[0], geom[1], e.mapPoint.x, e.mapPoint.y);
-        });
-    }, [])
-    return <div className="lmap" id="map">
 
-    </div>
-};
+
+
+
+
+        //比例尺  经纬度相关
+        const self = this
+        view.when(function () {
+            self.getScale(view)
+            //点击地图的监听事件
+            view.on("click", function (e: any) {
+                //获取初始化视角
+                // let activeViewpoint = view.viewpoint.clone();
+                // console.log(activeViewpoint);
+                //转换当前点击的坐标为地理坐标
+                // const geom = webMercatorUtils.xyToLngLat(e.mapPoint.x, e.mapPoint.y);
+                // console.log(geom[0], geom[1], e.mapPoint.x, e.mapPoint.y);
+            });
+
+            //双击事件
+            view.on('double-click', function (evt) {
+                evt.stopPropagation();
+            });
+
+            //滚轮事件
+            view.on('mouse-wheel', function () {
+                //鼠标滚轮缩放
+                self.getScale(view)
+            });
+
+            //鼠标移动
+            view.on("pointer-move", function (evt) { //鼠标移动事件
+                view.hitTest(evt).then(function (respond) {
+                    if (respond?.results[0]) {
+                        const result = respond.results[0];
+                        const lng = result.mapPoint.longitude.toFixed(4);
+                        const lat = result.mapPoint.latitude.toFixed(4);
+                        self.setState({
+                            lnglat: {
+                                lng,
+                                lat
+                            }
+                        })
+                    }
+                })
+            });
+
+            //比例尺
+            const legend = new Legend({
+                view: view,
+                layerInfos: [
+                    {
+                        layer: popuLayer,
+                        title: "人口"
+                    }
+                ],
+            });
+
+            view.ui.add(legend, "bottom-right");
+        })
+    }
+
+    getScale(view: SceneView) {
+        const scale = view.scale;
+        const _scale = scale.toFixed(0);
+        const self = this
+        self.setState({
+            scale: _scale
+        })
+    }
+
+
+
+    render(): React.ReactNode {
+        const { scale, lnglat } = this.state
+        return <div>
+            <div className="lmap" id="map">
+
+            </div>
+            {scale && <Row className="scale">
+                <Col>
+                    <Row>
+                        <Col>比例尺</Col>
+                        <Col>1:{scale}</Col>
+                    </Row>
+                </Col>
+                {lnglat?.lng && <Col style={{ paddingLeft: 10 }}>经度：{lnglat.lng}</Col>}
+                {lnglat?.lat && <Col style={{ paddingLeft: 10 }}>纬度：{lnglat.lat}</Col>}
+            </Row>}
+        </div>
+    };
+}
+
