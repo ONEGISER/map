@@ -1,0 +1,53 @@
+{
+  "name": "map",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@ant-design/icons": "^4.8.0",
+    "antd": "^5.0.5",
+    "axios": "^0.24.0",
+    "echarts": "^5.4.0",
+    "ol": "^7.1.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-draggable": "^4.4.5",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.4.4"
+  },
+  "scripts": {
+    "a": "npm install --registry https://registry.npm.taobao.org",
+    "start": "node --max-old-space-size=6000 node_modules/cross-env/src/bin/cross-env.js PORT=5555 craco start",
+    "build": "rimraf ./build && cross-env GENERATE_SOURCEMAP=false craco build"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "craco-less": "^2.0.0",
+    "@craco/craco": "^6.4.3",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^12.20.36",
+    "@types/react": "^17.0.33",
+    "@types/react-dom": "^17.0.10",
+    "cross-env": "^7.0.3",
+    "web-vitals": "^1.1.2"
+  }
+}
