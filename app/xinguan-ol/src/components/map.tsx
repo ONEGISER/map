@@ -60,13 +60,13 @@ function getColor(value: number) {
     const index = parseInt((value / 100).toString())
     color = colors[index]
   }
-  return color
+  return color ? color : { r: 182, g: 215, b: 0 }
 }
 
 
 
 let _datas: any = {}
-let _getColor: any
+let _getColor: any = getColor
 
 export class WebGLLayer extends Layer {
   createRenderer(): any {
