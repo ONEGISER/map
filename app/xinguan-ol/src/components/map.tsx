@@ -25,7 +25,7 @@ const xinguanLayer = "hpa3:xinguan2"
 const workspaace = "hpa3"
 
 
-function getColors(color1: any, color2: any, colorLevel: number) {
+export function getColors(color1: any, color2: any, colorLevel: number) {
   let colors = [];
   //默认的最深颜色 
   let red = color1.r, green = color1.g, blue = color1.b, a = color1.a ? color1.a : 1;
@@ -140,6 +140,7 @@ function getHightStyle() {
 
 
 export interface MapProps {
+  dates?: string[]
   provinceUrl?: string
   xinguanUrl?: string
   tk?: string
@@ -233,7 +234,7 @@ export class Map extends React.Component<MapProps, MapState>{
     const datas = await (await fetch(url)).json()
 
     //查询所有的时间
-    const dates = this.queryDates(datas)
+    const dates = this.props.dates ? this.props.dates : this.queryDates(datas)
     //查询所有的省级行政区划
     const provinces = await this.queryProvinces()
     //构造数据
