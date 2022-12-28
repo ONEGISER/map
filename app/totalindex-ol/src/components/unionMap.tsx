@@ -367,9 +367,9 @@ export class UnionMap extends React.Component<UnionMapProps, UnionMapState>{
     //标记图层
     const style = new Style({
       text: new Text({
-        font: 'bold 12px "Open Sans", "Arial Unicode MS", "sans-serif"',
+        font: 'bold 10px "Open Sans", "Arial Unicode MS", "sans-serif"',
         fill: new Fill({
-          color: 'white',
+          color: 'red',
         }),
       }),
     });
@@ -425,14 +425,16 @@ export class UnionMap extends React.Component<UnionMapProps, UnionMapState>{
               const popu = popuData[name]
               const techData = techObj[currentYear]
               const tech = techData[name]
-              self.setState({
-                showObj: {
-                  popu,
-                  tech,
-                  name,
-                  year: currentYear
-                }
-              })
+              if (popu) {
+                self.setState({
+                  showObj: {
+                    popu,
+                    tech,
+                    name,
+                    year: currentYear
+                  }
+                })
+              }
             }
           }
         }
@@ -511,10 +513,10 @@ export class UnionMap extends React.Component<UnionMapProps, UnionMapState>{
         </div>
       </Col>
       <Col style={{ width, height: "100%" }}>
-        <div style={{ width: "100%", height: "100%", paddingBottom: 10 }}>
-          <div style={{ width: "100%", height }}>
+        <Row justify={"center"} style={{ width: "100%", height: "100%", paddingBottom: 10, paddingTop: 10 }}>
+          <Row justify={"center"} style={{ width: "100%", height }}>
             {years && years.length > 0 && <PlayButton speed={this.props.speed} years={years} currentYear={currentYear} onChange={this.onChange.bind(this)} />}
-          </div>
+          </Row>
           <div style={{ width: "100%", height: `calc(100% - ${height}px)` }}>
             <div style={{ width: "100%", height: "35%" }}>
               {currentYear && <ChartShow name={"地区生产总值"} data={dqsczzDatas?.datas} time={currentYear} yAxisDatas={dqsczzYFields} color={"#ccff00"} />}
@@ -526,7 +528,7 @@ export class UnionMap extends React.Component<UnionMapProps, UnionMapState>{
               {currentYear && <ChartShow name={"建筑用地"} data={jzydDatas?.datas} time={currentYear} yAxisDatas={jzydYFields} color={"#FF7F00"} />}
             </div>
           </div>
-        </div>
+        </Row>
       </Col>
       <Spin spinning={loading} tip={"正在加载数据......"} style={{ position: "absolute", top: "45%", left: "48%" }}>
 
@@ -537,7 +539,7 @@ export class UnionMap extends React.Component<UnionMapProps, UnionMapState>{
             <Row style={{ width: "100%", padding: 10 }}>
               <Title level={4}>人口</Title>
             </Row>
-            <Row style={{ width: "100%" }}>
+            {popu && <Row style={{ width: "100%" }}>
               {this.renderItem("户籍户数(万户)", popu["Field3"])}
               {this.renderItem("户籍人口数(万人)", popu["Field15"])}
               {this.renderItem("户籍死亡人数(万人)", popu["Field17"])}
@@ -555,13 +557,13 @@ export class UnionMap extends React.Component<UnionMapProps, UnionMapState>{
               {this.renderItem("户籍出生率(‰)", popu["Field9"])}
               {this.renderItem("户籍死亡率(‰)", popu["Field10"])}
               {this.renderItem("城镇化率(%)", popu["Field18"])}
-            </Row>
+            </Row>}
           </Col>
           <Col span={12}>
             <Row style={{ width: "100%", padding: 10 }}>
               <Title level={4}>经济</Title>
             </Row>
-            <Row style={{ width: "100%", padding: 10 }}>
+            {tech && <Row style={{ width: "100%", padding: 10 }}>
               {this.renderItem("地区生产总值(亿元)", tech["Field11"])}
               {this.renderItem("第一产业增加值(亿元)", tech["Field4"])}
               {this.renderItem("第二产业增加值(亿元)", tech["Field2"])}
@@ -574,7 +576,7 @@ export class UnionMap extends React.Component<UnionMapProps, UnionMapState>{
               {this.renderItem("第三产业指数(%)", tech["Field10"])}
               {this.renderItem("工业指数(%)", tech["Field9"])}
               {this.renderItem("人均地区生产总值指数(%)", tech["Field13"])}
-            </Row>
+            </Row>}
           </Col>
         </Row>
       </Modal>}
