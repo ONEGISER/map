@@ -7,7 +7,7 @@ function getColor(value: number) {
     let color: any
     if (value > 50000) {
         color = { r: 255, g: 0, b: 0 }
-    } else if (value >25600) {
+    } else if (value > 25600) {
         color = { r: 255, g: 51, b: 0 }
     } else if (value > 12800) {
         color = { r: 255, g: 102, b: 0 }
@@ -31,7 +31,7 @@ function getColor(value: number) {
 export function MyRoutes() {
     return <Router>
         <Routes>
-            <Route path="/" element={<Map getColor={getColor} popup tk={tk} speed={2000} mapOption={{ lng: 112.40, lat: 31.2, zoom: 8 }} provinceUrl={"/datas/湖北省.json"} xinguanUrl={"/datas/hubeixinguan.geojson"} />}>
+            <Route path="/" element={<Map getColor={getColor} tk={tk} speed={2000} mapOption={{ lng: 112.40, lat: 31.2, zoom: 8 }} provinceUrl={"/datas/湖北省.json"} xinguanUrl={"/datas/hubeixinguan.geojson"} />}>
             </Route>
             <Route path="/china" element={<Map tk={tk} />}>
             </Route>

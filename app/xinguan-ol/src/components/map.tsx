@@ -121,7 +121,7 @@ function getStyle(feature: any) {
     const name = getName(_name)
     const value = _datas?.dataObj[name]
     const color = _getColor(value)
-    const _color = [color.r, color.g, color.b, color.a]
+    const _color = [color.r, color.g, color.b, 0]
     fillStyle.getFill().setColor(_color);
   }
   return fillStyle;
@@ -150,7 +150,6 @@ export interface MapProps {
     zoom?: number
   }
   getColor?: (value: number) => void
-  popup?: boolean
 }
 
 export interface MapState {
@@ -300,20 +299,20 @@ export class Map extends React.Component<MapProps, MapState>{
   }
 
   async addLayer(map: OlMap,) {
-    if (this.props.popup) {
-      this.vectorLayer = new VectorLayer({
-        properties: { layerId: this.layerId },
-        source: this.vectorSource,
-        style: getStyle,
-        opacity: 0.8
-      });
-    } else {
-      this.vectorLayer = new WebGLLayer({
-        source: this.vectorSource,
-      });
-    }
+    const webglLayer = new WebGLLayer({
+      source: this.vectorSource,
+    });
+    map.addLayer(webglLayer);
 
+
+    this.vectorLayer = new VectorLayer({
+      properties: { layerId: this.layerId },
+      source: this.vectorSource,
+      style: getStyle,
+      opacity: 0.8
+    });
     map.addLayer(this.vectorLayer);
+
 
     //标记图层
     const style = new Style({
@@ -430,7 +429,7 @@ export class Map extends React.Component<MapProps, MapState>{
       });
       if (self.highFeature) {
         self.highFeature.setStyle(getStyle(self.highFeature))
-        self.highFeature = null
+        // self.highFeature = null
       }
       const layer: any = features?.layer
       if (features && layer && layer?.values_.layerId === self.layerId) {
@@ -454,9 +453,10 @@ export class Map extends React.Component<MapProps, MapState>{
     const { dates, provinces, obj } = this.state
     this.setState({
       currentDate: date
+    }, () => {
+      _datas = this.getQzblDatas(date, dates, obj, provinces)
+      this.vectorLayer?.getSource().changed()
     })
-    _datas = this.getQzblDatas(date, dates, obj, provinces)
-    this.vectorLayer?.getSource().changed()
   }
 
   render(): React.ReactNode {
