@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { getColors, Map } from "./components/map"
 const tk = "0549bec0881a6e3ba4a593b97172bc00"
-export const colors = getColors({ r: 182, g: 215, b: 0 }, { r: 255, g: 153, b: 153 }, 20)
+export const colors = getColors({ r: 182, g: 215, b: 0 }, { r: 255, g: 153, b: 153 }, 10)
 
 function getColor(value: number) {
     let color: any
@@ -12,8 +12,10 @@ function getColor(value: number) {
         color = { r: 255, g: 51, b: 51 }
     } else if (value > 10000) {
         color = { r: 255, g: 102, b: 51 }
+    } else if (value > 3000) {
+        color = { r: 255, g: 153, b: 153 }
     } else {
-        const index = parseInt((value / 200).toString())
+        const index = parseInt((value / 300).toString())
         color = colors[index]
     }
     return color
