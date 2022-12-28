@@ -15,8 +15,10 @@ import esriConfig from "@arcgis/core/config"
 import Legend from "@arcgis/core/widgets/Legend"
 import ScaleBar from "@arcgis/core/widgets/ScaleBar";
 import React from "react";
-import { Col, Row } from "antd";
-
+import { Button, Card, Col, Row, Slider } from "antd";
+import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel"
+import * as promiseUtils from "@arcgis/core/core/promiseUtils";
+import * as geometryEngine from "@arcgis/core/geometry/geometryEngine"
 export interface MapProps {
 
 }
@@ -30,13 +32,19 @@ export interface MapState {
         lng?: string
         lat?: string
     }
+    created?: boolean
+    bufferSize?: number
 }
 export class Map extends React.Component<MapProps, MapState>{
+    populayer: any
+    sketchViewModel: any
     constructor(props: MapProps) {
         super(props)
         this.state = {
             scale: "",
-            lnglat: {}
+            lnglat: {},
+            created: false,
+            bufferSize: 0
         }
     }
     componentDidMount(): void {
@@ -85,17 +93,27 @@ export class Map extends React.Component<MapProps, MapState>{
                     stops: [
                         {
                             value: 100,
-                            color: "#33ffff",
+                            color: "#70b6ba",
                             label: '100',
                         },
                         {
-                            value: 2300,
-                            color: [51, 0, 255],
-                            label: '2300',
+                            value: 500,
+                            color: "#b7d5d7",
+                            label: '500',
+                        },
+                        {
+                            value: 1000,
+                            color: "#fff0d0",
+                            label: '1000',
+                        },
+                        {
+                            value: 3000,
+                            color: "#f9cbb3",
+                            label: '3000',
                         },
                         {
                             value: 16000,
-                            color: [255, 0, 0],
+                            color: "#ec8787",
                             label: '16000',
                         }
                     ]
@@ -124,7 +142,7 @@ export class Map extends React.Component<MapProps, MapState>{
         });
 
         // 人口图层，以geojson图层加载
-        const popuLayer = new GeoJSONLayer({
+        this.populayer = new GeoJSONLayer({
             id: "人口",
             url: "/datas/shandongpopu.geojson",//数据路径
             renderer: renderer,
@@ -136,7 +154,7 @@ export class Map extends React.Component<MapProps, MapState>{
                 title: "{name}",
                 content: [{
                     type: "fields",
-                    fieldInfos: [ {
+                    fieldInfos: [{
                         fieldName: "ENAME",
                         label: "行政区英文名称"
                     }, {
@@ -158,7 +176,7 @@ export class Map extends React.Component<MapProps, MapState>{
         const map = new EsriMap({
             basemap: "arcgis-topographic", //基础地图服务   可以选择""dark-gray
             ground: "world-elevation", //高程服务
-            layers: [popuLayer],
+            layers: [this.populayer],
         });
 
         const view = new SceneView({
@@ -177,65 +195,78 @@ export class Map extends React.Component<MapProps, MapState>{
         });
 
 
-
-
-
-
         //比例尺  经纬度相关
         const self = this
         view.when(function () {
-            self.getScale(view)
-            //点击地图的监听事件
-            view.on("click", function (e: any) {
-                //获取初始化视角
-                // let activeViewpoint = view.viewpoint.clone();
-                // console.log(activeViewpoint);
-                //转换当前点击的坐标为地理坐标
-                // const geom = webMercatorUtils.xyToLngLat(e.mapPoint.x, e.mapPoint.y);
-                // console.log(geom[0], geom[1], e.mapPoint.x, e.mapPoint.y);
-            });
-
-            //双击事件
-            view.on('double-click', function (evt) {
-                evt.stopPropagation();
-            });
-
-            //滚轮事件
-            view.on('mouse-wheel', function () {
-                //鼠标滚轮缩放
-                self.getScale(view)
-            });
-
-            //鼠标移动
-            view.on("pointer-move", function (evt) { //鼠标移动事件
-                view.hitTest(evt).then(function (respond) {
-                    if (respond?.results[0]) {
-                        const result = respond.results[0];
-                        const lng = result.mapPoint.longitude.toFixed(4);
-                        const lat = result.mapPoint.latitude.toFixed(4);
-                        self.setState({
-                            lnglat: {
-                                lng,
-                                lat
-                            }
-                        })
-                    }
-                })
-            });
-
-            //比例尺
-            const legend = new Legend({
-                view: view,
-                layerInfos: [
-                    {
-                        layer: popuLayer,
-                        title: "人口"
-                    }
-                ],
-            });
-
-            view.ui.add(legend, "bottom-right");
+            self.setState({
+                created: true
+            }, () => {
+                setTimeout(() => {
+                    self.addLisener(view, self, self.populayer)
+                }, 100);
+            })
         })
+    }
+
+
+    addLisener(view: any, self: any, popuLayer: any) {
+        self.getScale(view)
+        //点击地图的监听事件
+        view.on("click", function (e: any) {
+            //获取初始化视角
+            // let activeViewpoint = view.viewpoint.clone();
+            // console.log(activeViewpoint);
+            //转换当前点击的坐标为地理坐标
+            // const geom = webMercatorUtils.xyToLngLat(e.mapPoint.x, e.mapPoint.y);
+            // console.log(geom[0], geom[1], e.mapPoint.x, e.mapPoint.y);
+        });
+
+        //双击事件
+        view.on('double-click', function (evt: any) {
+            evt.stopPropagation();
+        });
+
+        //滚轮事件
+        view.on('mouse-wheel', function () {
+            //鼠标滚轮缩放
+            self.getScale(view)
+        });
+
+        //鼠标移动
+        view.on("pointer-move", function (evt: any) { //鼠标移动事件
+            view.hitTest(evt).then(function (respond: any) {
+                if (respond?.results[0]) {
+                    const result = respond.results[0];
+                    const lng = result.mapPoint.longitude.toFixed(4);
+                    const lat = result.mapPoint.latitude.toFixed(4);
+                    self.setState({
+                        lnglat: {
+                            lng,
+                            lat
+                        }
+                    })
+                }
+            })
+        });
+
+
+        //比例尺
+        const legend = new Legend({
+            container: "legendDiv",
+            view: view,
+            layerInfos: [
+                {
+                    layer: popuLayer,
+                    title: "人口"
+                }
+            ],
+        });
+
+        view.ui.add(legend, "bottom-right");
+
+        view.ui.add(["queryDiv"], "top-right");
+
+        self.createBuffer(view, self)
     }
 
     getScale(view: SceneView) {
@@ -248,23 +279,187 @@ export class Map extends React.Component<MapProps, MapState>{
     }
 
 
+    createBuffer(view: any, self: any) {
+        let sceneLayerView = null;
+        let sceneLayer = null;
+        // add a GraphicsLayer for the sketches and the buffer
+        const sketchLayer = new GraphicsLayer();
+        const bufferLayer: any = new GraphicsLayer();
+        view.map.addMany([bufferLayer, sketchLayer]);
+        let queryDiv: any
+        view.whenLayerView(this.populayer).then((layerView: any) => {
+            sceneLayerView = layerView;
+            queryDiv = document.getElementById("queryDiv")
+            queryDiv.style.display = "block";
+        });
+
+        // use SketchViewModel to draw polygons that are used as a query
+        let sketchGeometry: any = null;
+        this.sketchViewModel = new SketchViewModel({
+            layer: sketchLayer,
+            defaultUpdateOptions: {
+                tool: "reshape",
+                toggleToolOnClick: false
+            },
+            view: view,
+            defaultCreateOptions: { hasZ: false }
+        });
+
+        this.sketchViewModel.on("create", (event: any) => {
+            if (event.state === "complete") {
+                sketchGeometry = event.graphic.geometry;
+                runQuery();
+            }
+        });
+
+        this.sketchViewModel.on("update", (event: any) => {
+            if (event.state === "complete") {
+                sketchGeometry = event.graphics[0].geometry;
+                runQuery();
+            }
+        });
+
+        // set the geometry query on the visible SceneLayerView
+        const debouncedRunQuery = promiseUtils.debounce(() => {
+            if (!sketchGeometry) {
+                return;
+            }
+
+            queryDiv.style.display = "block";
+            updateBufferGraphic(self.state.bufferSize);
+            return promiseUtils.eachAlways([
+                // queryStatistics(),
+                // updateSceneLayer()
+            ]);
+        });
+
+        function runQuery() {
+            debouncedRunQuery().catch((error: any) => {
+                if (error.name === "AbortError") {
+                    return;
+                }
+
+                console.error(error);
+            });
+        }
+
+        // update the graphic with buffer
+        function updateBufferGraphic(buffer: any) {
+            // add a polygon graphic for the buffer
+            if (buffer > 0) {
+                const bufferGeometry = geometryEngine.geodesicBuffer(
+                    sketchGeometry,
+                    buffer,
+                    "meters"
+                );
+                if (bufferLayer.graphics.length === 0) {
+                    bufferLayer.add(
+                        new Graphic({
+                            geometry: bufferGeometry,
+                            symbol: self.sketchViewModel.polygonSymbol
+                        } as any)
+                    );
+                } else {
+                    bufferLayer.graphics.getItemAt(0).geometry = bufferGeometry;
+                }
+            } else {
+                bufferLayer.removeAll();
+            }
+        }
+    }
+
+
+
+
+    onSliderChange(value: number) {
+        this.setState({
+            bufferSize: value
+        })
+    }
+
+    geometryButtonsClickHandler(event: any) {
+        const geometryType = event.target.value;
+        this.clearGeometry();
+        this.sketchViewModel.create(geometryType);
+    }
+
+    clearGeometry() {
+        // sketchGeometry = null;
+        // sketchViewModel.cancel();
+        // sketchLayer.removeAll();
+        // bufferLayer.removeAll();
+        // clearHighlighting();
+        // clearCharts();
+        // resultDiv.style.display = "none";
+    }
+
+
 
     render(): React.ReactNode {
-        const { scale, lnglat } = this.state
+        const { scale, lnglat, created, bufferSize } = this.state
         return <div>
             <div className="lmap" id="map">
 
             </div>
-            {scale && <Row className="scale">
-                <Col>
-                    <Row>
-                        <Col>比例尺</Col>
-                        <Col>1:{scale}</Col>
-                    </Row>
-                </Col>
-                {lnglat?.lng && <Col style={{ paddingLeft: 10 }}>经度：{lnglat.lng}</Col>}
-                {lnglat?.lat && <Col style={{ paddingLeft: 10 }}>纬度：{lnglat.lat}</Col>}
-            </Row>}
+            {scale && <Card size="small" className="scale">
+                <Row >
+                    <Col>
+                        <Row>
+                            <Col>比例尺</Col>
+                            <Col>1:{scale}</Col>
+                        </Row>
+                    </Col>
+                    {lnglat?.lng && <Col style={{ paddingLeft: 10 }}>经度：{lnglat.lng}</Col>}
+                    {lnglat?.lat && <Col style={{ paddingLeft: 10 }}>纬度：{lnglat.lat}</Col>}
+                </Row></Card>}
+
+            {/* 图例 */}
+            {created && <Card size="small" title={"图例"} id="legendDiv" style={{ padding: 10 }}></Card>}
+            {/* 查询面板 */}
+            {created && <Card size="small" title={"几何图形查询"} id="queryDiv" style={{ padding: 10 }}>
+                <Row style={{ width: "100%" }} >
+                    <Button
+                        style={{ marginLeft: 10 }}
+                        type="primary"
+                        // className="esri-widget--button esri-icon-map-pin geometry-button"
+                        id="point-geometry-button"
+                        value="point"
+                        title="按点选择"
+                    >
+                        点
+                    </Button>
+                    <Button
+                        style={{ marginLeft: 10 }}
+                        type="primary"
+                        // className="esri-widget--button esri-icon-polyline geometry-button"
+                        id="line-geometry-button"
+                        value="polyline"
+                        title="按折线选择"
+                    >
+                        线
+                    </Button>
+                    <Button
+                        style={{ marginLeft: 10 }}
+                        type="primary"
+                        // className="esri-widget--button esri-icon-polygon geometry-button"
+                        id="polygon-geometry-button"
+                        value="polygon"
+                        title="按多边形选择"
+                    >
+                        面
+                    </Button>
+                </Row>
+                <Row style={{ width: "100%" }}>
+                    <div style={{ padding: "10px 0" }}>设置缓冲区半径:</div>
+                    <Slider value={bufferSize} style={{ width: "100%" }} min={0} max={1000} onChange={this.onSliderChange.bind(this)}></Slider>
+
+                </Row>
+                <Row justify={"center"} style={{ width: "100%" }}>
+                    <Button id="clearGeometry" danger type="dashed">
+                        清除
+                    </Button>
+                </Row>
+            </Card>}
         </div>
     };
 }
