@@ -362,47 +362,67 @@ export class Map extends React.Component<MapProps, MapState>{
 
 
   addPopup() {
+    //获取弹窗dom
     const container: any = document.getElementById('popup');
     const content: any = document.getElementById('popup-content');
     const closer: any = document.getElementById('popup-closer');
+    //构造弹窗
     const overlay = new Overlay({
       element: container,
       autoPan: true,
       positioning: 'bottom-center',
       stopEvent: false,
     } as any);
-
+    //将弹窗添加到地图
     this.map.addOverlay(overlay);
+
+    //关闭弹窗的方法
     const close = () => {
+      //将弹窗位置置空
       overlay.setPosition(undefined);
       closer.blur();
+      //隐藏弹窗
       content.style.display = "none"
+      //通过延时处理，将弹窗游标打开
       setTimeout(() => {
         self.isMapClick = true
       }, 500);
       return false;
     }
     closer.onclick = function () {
+      //将地图点击游标置为false，为了阻止弹窗再次被点击
       self.isMapClick = false
+      //关闭弹窗
       close()
     };
-
-
+    //存储this,方便监听中使用
     let self = this
+    //地图点击的监听
     this.map.on('singleclick', async (e: any) => {
+      //点击地图的位置
       const coordinate = e.coordinate;
+      //状态存储的数据：当前时间和时间对应的数据对象
       const { currentDate, obj } = self.state
+      //判断弹窗游标是否可用
       if (self.isMapClick) {
+        //获取是否有要素被点击
         if (this.map.hasFeatureAtPixel(e.pixel)) {
+          //获取点击获取到的要素
           const features = this.map.getFeaturesAtPixel(e.pixel, { hitTolerance: 1 });
           if (features && features[0]) {
+            //取第一个要素的数据，将行政区名称记录下来
             const name = features[0]?.values_.name
+            //判断当前的时间是否存在
             if (currentDate) {
+              //获取当前时间的数据
               const data = obj[currentDate]
               const _name = getName(name)
+              //获取当前选中行政区的的数据值
               const prop = data[_name]
               if (prop) {
+                //显示弹窗的dom
                 content.style.display = "block"
+                //弹窗内容
                 content.innerHTML = `
                   名称：${name}<br/>
                   日期：${prop.date}<br/>
@@ -411,17 +431,21 @@ export class Map extends React.Component<MapProps, MapState>{
                   累计死亡病例：${prop.ljzy}<br/>
                   累计治愈病例：${prop.ljsw}<br/>
                   `;
+                //设置弹窗的位置为点击的地图位置
                 overlay.setPosition(coordinate);
               }
             }
           }
         }
       } else {
+        //如果游标不可用 关闭弹窗
         close()
       }
     });
 
+    //移动鼠标的监听
     this.map.on('pointermove', function (evt: any) {
+      //获取鼠标移入的要素
       const features = self.map.forEachFeatureAtPixel(evt.pixel, function (feature: any, layer: any) {
         return {
           feature: feature,
@@ -429,12 +453,17 @@ export class Map extends React.Component<MapProps, MapState>{
         };
       });
       if (self.highFeature) {
+        //还原鼠标之前移入要素的样式
         self.highFeature.setStyle(getStyle(self.highFeature))
         // self.highFeature = null
       }
+      //当前图层
       const layer: any = features?.layer
+      //如果是指定图层
       if (features && layer && layer?.values_.layerId === self.layerId) {
+        //记录选中的高亮要素
         self.highFeature = features.feature;
+        //将选中的要素高亮
         self.highFeature.setStyle(getHightStyle())
       }
     })

@@ -38,6 +38,13 @@ export interface MapState {
 export class Map extends React.Component<MapProps, MapState>{
     populayer: any
     sketchViewModel: any
+    sceneLayerView: any = null;
+    sketchLayer = new GraphicsLayer();
+    bufferLayer: any = new GraphicsLayer();
+    queryDiv: any
+    sketchGeometry: any = null;
+    highlightHandle: any = null;
+
     constructor(props: MapProps) {
         super(props)
         this.state = {
@@ -280,23 +287,16 @@ export class Map extends React.Component<MapProps, MapState>{
 
 
     createBuffer(view: any, self: any) {
-        let sceneLayerView = null;
-        let sceneLayer = null;
-        // add a GraphicsLayer for the sketches and the buffer
-        const sketchLayer = new GraphicsLayer();
-        const bufferLayer: any = new GraphicsLayer();
-        view.map.addMany([bufferLayer, sketchLayer]);
-        let queryDiv: any
-        view.whenLayerView(this.populayer).then((layerView: any) => {
-            sceneLayerView = layerView;
-            queryDiv = document.getElementById("queryDiv")
-            queryDiv.style.display = "block";
+        view.map.addMany([self.bufferLayer, self.sketchLayer]);
+        view.whenLayerView(self.populayer).then((layerView: any) => {
+            self.sceneLayerView = layerView;
+            self.queryDiv = document.getElementById("queryDiv")
+            self.queryDiv.style.display = "block";
         });
 
         // use SketchViewModel to draw polygons that are used as a query
-        let sketchGeometry: any = null;
-        this.sketchViewModel = new SketchViewModel({
-            layer: sketchLayer,
+        self.sketchViewModel = new SketchViewModel({
+            layer: self.sketchLayer,
             defaultUpdateOptions: {
                 tool: "reshape",
                 toggleToolOnClick: false
@@ -305,31 +305,55 @@ export class Map extends React.Component<MapProps, MapState>{
             defaultCreateOptions: { hasZ: false }
         });
 
-        this.sketchViewModel.on("create", (event: any) => {
+        self.sketchViewModel.on("create", (event: any) => {
             if (event.state === "complete") {
-                sketchGeometry = event.graphic.geometry;
+                self.sketchGeometry = event.graphic.geometry;
                 runQuery();
             }
         });
 
-        this.sketchViewModel.on("update", (event: any) => {
+        self.sketchViewModel.on("update", (event: any) => {
             if (event.state === "complete") {
-                sketchGeometry = event.graphics[0].geometry;
+                self.sketchGeometry = event.graphics[0].geometry;
                 runQuery();
             }
         });
+
+        // Set the renderer with objectIds
+        function highlightBuildings(objectIds: string[]) {
+            // Remove any previous highlighting
+            self.clearHighlighting();
+            const objectIdField = self.populayer.objectIdField;
+            // document.getElementById("count").innerHTML = objectIds.length;
+            console.log(objectIds);
+
+            self.highlightHandle = self.sceneLayerView.highlight(objectIds);
+        }
+
+
+        function updateSceneLayer() {
+            const query = self.sceneLayerView.createQuery();
+            query.geometry = self.sketchGeometry;
+            query.distance = getBufferSize();
+            return self.sceneLayerView.queryObjectIds(query).then(highlightBuildings);
+        }
+
+
+        function getBufferSize() {
+            return self.state.bufferSize ? self.state.bufferSize * 1000 : 0
+        }
 
         // set the geometry query on the visible SceneLayerView
         const debouncedRunQuery = promiseUtils.debounce(() => {
-            if (!sketchGeometry) {
+            if (!self.sketchGeometry) {
                 return;
             }
 
-            queryDiv.style.display = "block";
-            updateBufferGraphic(self.state.bufferSize);
+            self.queryDiv.style.display = "block";
+            updateBufferGraphic(getBufferSize());
             return promiseUtils.eachAlways([
-                // queryStatistics(),
-                // updateSceneLayer()
+                queryStatistics(),
+                updateSceneLayer()
             ]);
         });
 
@@ -343,33 +367,138 @@ export class Map extends React.Component<MapProps, MapState>{
             });
         }
 
+        function queryStatistics() {
+            const statDefinitions = [
+                {
+                    onStatisticField:
+                        "CASE WHEN buildingMaterial = 'concrete or lightweight concrete' THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "material_concrete",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN buildingMaterial = 'brick' THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "material_brick",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN buildingMaterial = 'wood' THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "material_wood",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN buildingMaterial = 'steel' THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "material_steel",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN buildingMaterial IN ('concrete or lightweight concrete', 'brick', 'wood', 'steel') THEN 0 ELSE 1 END",
+                    outStatisticFieldName: "material_other",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN (yearCompleted >= '1850' AND yearCompleted <= '1899') THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "year_1850",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN (yearCompleted >= '1900' AND yearCompleted <= '1924') THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "year_1900",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN (yearCompleted >= '1925' AND yearCompleted <= '1949') THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "year_1925",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN (yearCompleted >= '1950' AND yearCompleted <= '1974') THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "year_1950",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN (yearCompleted >= '1975' AND yearCompleted <= '1999') THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "year_1975",
+                    statisticType: "sum"
+                },
+                {
+                    onStatisticField:
+                        "CASE WHEN (yearCompleted >= '2000' AND yearCompleted <= '2015') THEN 1 ELSE 0 END",
+                    outStatisticFieldName: "year_2000",
+                    statisticType: "sum"
+                }
+            ];
+            const query = self.sceneLayerView.createQuery();
+            query.geometry = self.sketchGeometry;
+            query.distance = getBufferSize();
+            // query.outStatistics = statDefinitions;
+
+            return self.sceneLayerView.queryFeatures(query).then((result: any) => {
+                const features = result.features
+                const allStats = features[0].attributes;
+                console.log(features, "oooo");
+
+                // updateChart(materialChart, [
+                //     allStats.material_concrete,
+                //     allStats.material_brick,
+                //     allStats.material_wood,
+                //     allStats.material_steel,
+                //     allStats.material_other
+                // ]);
+                // updateChart(yearChart, [
+                //     allStats.year_1850,
+                //     allStats.year_1900,
+                //     allStats.year_1925,
+                //     allStats.year_1950,
+                //     allStats.year_1975,
+                //     allStats.year_2000
+                // ]);
+            }, console.error);
+        }
+
         // update the graphic with buffer
         function updateBufferGraphic(buffer: any) {
             // add a polygon graphic for the buffer
             if (buffer > 0) {
                 const bufferGeometry = geometryEngine.geodesicBuffer(
-                    sketchGeometry,
+                    self.sketchGeometry,
                     buffer,
                     "meters"
                 );
-                if (bufferLayer.graphics.length === 0) {
-                    bufferLayer.add(
+                if (self.bufferLayer.graphics.length === 0) {
+                    self.bufferLayer.add(
                         new Graphic({
                             geometry: bufferGeometry,
                             symbol: self.sketchViewModel.polygonSymbol
                         } as any)
                     );
                 } else {
-                    bufferLayer.graphics.getItemAt(0).geometry = bufferGeometry;
+                    self.bufferLayer.graphics.getItemAt(0).geometry = bufferGeometry;
                 }
             } else {
-                bufferLayer.removeAll();
+                self.bufferLayer.removeAll();
             }
         }
     }
 
+    clearHighlighting() {
+        if (this.highlightHandle) {
+            this.highlightHandle.remove();
+            this.highlightHandle = null;
+        }
+    }
 
+    clearCharts() {
 
+    }
 
     onSliderChange(value: number) {
         this.setState({
@@ -377,20 +506,20 @@ export class Map extends React.Component<MapProps, MapState>{
         })
     }
 
-    geometryButtonsClickHandler(event: any) {
-        const geometryType = event.target.value;
+    geometryButtonsClickHandler(geometryType: string, event: any) {
         this.clearGeometry();
         this.sketchViewModel.create(geometryType);
     }
 
     clearGeometry() {
-        // sketchGeometry = null;
-        // sketchViewModel.cancel();
-        // sketchLayer.removeAll();
-        // bufferLayer.removeAll();
-        // clearHighlighting();
-        // clearCharts();
-        // resultDiv.style.display = "none";
+        this.sketchGeometry = null;
+        this.sketchViewModel.cancel();
+        this.sketchLayer.removeAll();
+        this.bufferLayer.removeAll();
+        this.clearHighlighting();
+        this.clearCharts();
+        if (this.queryDiv)
+            this.queryDiv.style.display = "none";
     }
 
 
@@ -425,6 +554,7 @@ export class Map extends React.Component<MapProps, MapState>{
                         id="point-geometry-button"
                         value="point"
                         title="按点选择"
+                        onClick={this.geometryButtonsClickHandler.bind(this, "point")}
                     >
                         点
                     </Button>
@@ -435,6 +565,7 @@ export class Map extends React.Component<MapProps, MapState>{
                         id="line-geometry-button"
                         value="polyline"
                         title="按折线选择"
+                        onClick={this.geometryButtonsClickHandler.bind(this, "polyline")}
                     >
                         线
                     </Button>
@@ -445,14 +576,14 @@ export class Map extends React.Component<MapProps, MapState>{
                         id="polygon-geometry-button"
                         value="polygon"
                         title="按多边形选择"
+                        onClick={this.geometryButtonsClickHandler.bind(this, "polygon")}
                     >
                         面
                     </Button>
                 </Row>
                 <Row style={{ width: "100%" }}>
-                    <div style={{ padding: "10px 0" }}>设置缓冲区半径:</div>
-                    <Slider value={bufferSize} style={{ width: "100%" }} min={0} max={1000} onChange={this.onSliderChange.bind(this)}></Slider>
-
+                    <div style={{ padding: "10px 0" }}>设置缓冲区半径(km):</div>
+                    <Slider value={bufferSize} style={{ width: "100%" }} min={0} max={500} onChange={this.onSliderChange.bind(this)}></Slider>
                 </Row>
                 <Row justify={"center"} style={{ width: "100%" }}>
                     <Button id="clearGeometry" danger type="dashed">
