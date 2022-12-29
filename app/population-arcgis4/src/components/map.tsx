@@ -1,24 +1,20 @@
 import "./map.css"
 import EsriMap from "@arcgis/core/Map";
-import { useEffect } from "react";
 import SceneView from "@arcgis/core/views/SceneView"
 import Graphic from "@arcgis/core/Graphic"
-import * as webMercatorUtils from "@arcgis/core/geometry/support/webMercatorUtils"
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer"
-import FeatureLayer from "@arcgis/core/layers/FeatureLayer"
 import LabelClass from "@arcgis/core/layers/support/LabelClass"
 import GeoJSONLayer from "@arcgis/core/layers/GeoJSONLayer"
-import PolygonSymbol3D from "@arcgis/core/symbols/PolygonSymbol3D"
-import ExtrudeSymbol3DLayer from "@arcgis/core/symbols/ExtrudeSymbol3DLayer"
-import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer"
 import esriConfig from "@arcgis/core/config"
 import Legend from "@arcgis/core/widgets/Legend"
-import ScaleBar from "@arcgis/core/widgets/ScaleBar";
 import React from "react";
-import { Button, Card, Col, Row, Slider } from "antd";
+import { Button, Card, Col, Modal, Row, Slider, Spin, Table } from "antd";
 import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel"
 import * as promiseUtils from "@arcgis/core/core/promiseUtils";
 import * as geometryEngine from "@arcgis/core/geometry/geometryEngine"
+import { DynamicChart } from "./dynamicChart";
+import { ChartData, PieChart } from "./pieChart";
+
 export interface MapProps {
 
 }
@@ -34,6 +30,23 @@ export interface MapState {
     }
     created?: boolean
     bufferSize?: number
+    /**人口 */
+    popuDatas?: ChartData[]
+    /**密度 */
+    densityDatas?: ChartData[]
+    time?: number
+    loading?: boolean
+    //人口饼图数据
+    piePopuDatas?: ChartData[]
+    visible?: boolean
+    dataSource?: DataSource[]
+}
+
+export interface DataSource {
+    POPU?: number
+    NAME?: string
+    DENSITY?: number
+    feature?: any
 }
 export class Map extends React.Component<MapProps, MapState>{
     populayer: any
@@ -51,11 +64,23 @@ export class Map extends React.Component<MapProps, MapState>{
             scale: "",
             lnglat: {},
             created: false,
-            bufferSize: 0
+            bufferSize: 0,
+            popuDatas: [],
+            densityDatas: [],
+            time: this.getTime(),
+            loading: true,
+            piePopuDatas: [],
+            visible: false,
+            dataSource: []
         }
     }
     componentDidMount(): void {
         this.init()
+    }
+
+
+    getTime() {
+        return new Date().getTime()
     }
 
 
@@ -205,13 +230,17 @@ export class Map extends React.Component<MapProps, MapState>{
         //比例尺  经纬度相关
         const self = this
         view.when(function () {
-            self.setState({
-                created: true
-            }, () => {
-                setTimeout(() => {
-                    self.addLisener(view, self, self.populayer)
-                }, 100);
-            })
+            //延迟2s加载
+            setTimeout(() => {
+                self.setState({
+                    created: true
+                }, () => {
+                    setTimeout(() => {
+                        //添加一些监听
+                        self.addLisener(view, self, self.populayer)
+                    }, 100);
+                })
+            }, 2000);
         })
     }
 
@@ -269,10 +298,13 @@ export class Map extends React.Component<MapProps, MapState>{
             ],
         });
 
+        //图例
         view.ui.add(legend, "bottom-right");
 
+        //查询面板
         view.ui.add(["queryDiv"], "top-right");
 
+        //创建缓冲区
         self.createBuffer(view, self)
     }
 
@@ -285,6 +317,15 @@ export class Map extends React.Component<MapProps, MapState>{
         })
     }
 
+    queryAllFeatures() {
+        //查询图层里面所有的要素，用于加载所有数据
+        const query = this.sceneLayerView.createQuery();
+        query.where = "1=1"
+        return this.sceneLayerView.queryFeatures(query).then((result: any) => {
+            this.getChartDatas(result)
+        }, console.error);
+    }
+
 
     createBuffer(view: any, self: any) {
         view.map.addMany([self.bufferLayer, self.sketchLayer]);
@@ -292,6 +333,12 @@ export class Map extends React.Component<MapProps, MapState>{
             self.sceneLayerView = layerView;
             self.queryDiv = document.getElementById("queryDiv")
             self.queryDiv.style.display = "block";
+            //查询所有的要素
+            setTimeout(() => {
+                self.populayer.when(() => {
+                    self.queryAllFeatures()
+                })
+            }, 3000);
         });
 
         // use SketchViewModel to draw polygons that are used as a query
@@ -368,99 +415,14 @@ export class Map extends React.Component<MapProps, MapState>{
         }
 
         function queryStatistics() {
-            const statDefinitions = [
-                {
-                    onStatisticField:
-                        "CASE WHEN buildingMaterial = 'concrete or lightweight concrete' THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "material_concrete",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN buildingMaterial = 'brick' THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "material_brick",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN buildingMaterial = 'wood' THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "material_wood",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN buildingMaterial = 'steel' THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "material_steel",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN buildingMaterial IN ('concrete or lightweight concrete', 'brick', 'wood', 'steel') THEN 0 ELSE 1 END",
-                    outStatisticFieldName: "material_other",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN (yearCompleted >= '1850' AND yearCompleted <= '1899') THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "year_1850",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN (yearCompleted >= '1900' AND yearCompleted <= '1924') THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "year_1900",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN (yearCompleted >= '1925' AND yearCompleted <= '1949') THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "year_1925",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN (yearCompleted >= '1950' AND yearCompleted <= '1974') THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "year_1950",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN (yearCompleted >= '1975' AND yearCompleted <= '1999') THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "year_1975",
-                    statisticType: "sum"
-                },
-                {
-                    onStatisticField:
-                        "CASE WHEN (yearCompleted >= '2000' AND yearCompleted <= '2015') THEN 1 ELSE 0 END",
-                    outStatisticFieldName: "year_2000",
-                    statisticType: "sum"
-                }
-            ];
             const query = self.sceneLayerView.createQuery();
             query.geometry = self.sketchGeometry;
             query.distance = getBufferSize();
-            // query.outStatistics = statDefinitions;
-
+            self.setState({
+                loading: true
+            })
             return self.sceneLayerView.queryFeatures(query).then((result: any) => {
-                const features = result.features
-                const allStats = features[0].attributes;
-                console.log(features, "oooo");
-
-                // updateChart(materialChart, [
-                //     allStats.material_concrete,
-                //     allStats.material_brick,
-                //     allStats.material_wood,
-                //     allStats.material_steel,
-                //     allStats.material_other
-                // ]);
-                // updateChart(yearChart, [
-                //     allStats.year_1850,
-                //     allStats.year_1900,
-                //     allStats.year_1925,
-                //     allStats.year_1950,
-                //     allStats.year_1975,
-                //     allStats.year_2000
-                // ]);
+                self.getChartDatas(result)
             }, console.error);
         }
 
@@ -497,7 +459,7 @@ export class Map extends React.Component<MapProps, MapState>{
     }
 
     clearCharts() {
-
+        this.queryAllFeatures()
     }
 
     onSliderChange(value: number) {
@@ -519,6 +481,7 @@ export class Map extends React.Component<MapProps, MapState>{
         this.clearHighlighting();
         this.clearCharts();
         if (!showUi) {
+            //清除UI
             if (this.queryDiv)
                 this.queryDiv.style.display = "none";
         }
@@ -530,14 +493,134 @@ export class Map extends React.Component<MapProps, MapState>{
     }
 
 
+    getChartDatas(queryFeatures: any) {
+        //构造echarts数据
+        if (queryFeatures?.features) {
+            const features = queryFeatures.features
+            const tempPopuDatas: ChartData[] = []
+            const tempDensityDatas: ChartData[] = []
+            const tempPopuCalcDatas: ChartData[] = []
+
+            const dataSource: DataSource[] = []
+
+            const popuObj: { [key: string]: number } = {
+                "<40": 0,
+                "40-80": 0,
+                "80-160": 0,
+                ">=160": 0,
+            }
+
+            features.forEach((feature: any) => {
+                const { attributes } = feature
+                // DENSITY: 816 NAME: "微山县" POPU: 68
+                if (attributes) {
+                    const { DENSITY, POPU, NAME } = attributes
+                    tempPopuDatas.push({ value: POPU ? Number(POPU) : 0, name: NAME })
+                    tempDensityDatas.push({ value: DENSITY ? Number(DENSITY) : 0, name: NAME })
+                    dataSource.push({
+                        DENSITY,
+                        POPU,
+                        NAME,
+                        feature
+                    })
+                    //分级统计人口
+                    if (POPU < 40) {
+                        popuObj["<40"]++
+                    } else if (POPU >= 40 && POPU < 80) {
+                        popuObj["40-80"]++
+                    } else if (POPU >= 80 && POPU < 160) {
+                        popuObj["80-160"]++
+                    } else if (POPU >= 160) {
+                        popuObj[">=160"]++
+                    }
+                }
+            });
+
+            if (popuObj) {
+                for (let i in popuObj) {
+                    tempPopuCalcDatas.push({
+                        name: i,
+                        value: popuObj[i]
+                    })
+                }
+            }
+
+            tempPopuDatas.sort((a, b) => { return b.value - a.value })
+            tempDensityDatas.sort((a, b) => { return b.value - a.value })
+            dataSource.sort((a: any, b: any) => { return b.POPU - a.POPU })
+
+            this.setState({
+                popuDatas: tempPopuDatas,
+                densityDatas: tempDensityDatas,
+                time: this.getTime(),
+                loading: false,
+                piePopuDatas: tempPopuCalcDatas,
+                dataSource
+            })
+        }
+    }
+
+    getDatas(data: ChartData[], count?: number) {
+        const datas: number[] = []
+        const names: string[] = []
+        for (let i in data) {
+            if (count) {
+                if (Number(i) > count - 1) {
+                    break;
+                }
+            }
+            const { name, value } = data[i]
+            datas.push(value)
+            names.push(name)
+        }
+        return { datas, names }
+    }
+
+
+    onView() {
+        this.setState({
+            visible: true
+        })
+    }
+
+    onClose() {
+        this.setState({
+            visible: false
+        })
+    }
+
+
 
     render(): React.ReactNode {
-        const { scale, lnglat, created, bufferSize } = this.state
+        const { scale, lnglat, created, bufferSize, popuDatas, densityDatas, time, loading, piePopuDatas, visible, dataSource } = this.state
+        const width = 340
+        const count = 10
+        const height = 40
+        const popuData = popuDatas ? this.getDatas(popuDatas, count) : { datas: [], names: [] }
+        const densityData = densityDatas ? this.getDatas(densityDatas, count) : { datas: [], names: [] }
+        const columns = [
+            {
+                title: '名称',
+                dataIndex: 'NAME',
+                key: 'nAME',
+            },
+            {
+                title: '人口',
+                dataIndex: 'POPU',
+                key: 'POPU',
+            },
+            {
+                title: '人口密度',
+                dataIndex: 'DENSITY',
+                key: 'DENSITY',
+            },
+        ];
+
         return <div>
             <div className="lmap" id="map">
 
             </div>
-            {scale && <Card size="small" className="scale">
+            {scale && <Card size="small" className="scale" style={{ width }}>
                 <Row >
                     <Col>
                         <Row>
@@ -599,11 +682,35 @@ export class Map extends React.Component<MapProps, MapState>{
                 </Row>
             </Card>}
 
-            <Row style={{ width: 300, position: "absolute", left:10, top: 210, bottom: 90 }}>
-                <Card title={"统计数据展示"} style={{ width: "100%", height: "100%" }} size="small">
+            <Row style={{ width, position: "absolute", left: 10, top: 210, bottom: 90 }}>
+                <Card title={"统计数据展示"} style={{ width: "100%", height: "100%", position: "relative" }} bodyStyle={{ width: "100%", height: `calc(100% - 40px)`, padding: 10 }} size="small">
+                    <Row justify={"center"} style={{ height, width: "100%" }}>
+                        {popuDatas && popuDatas.length > 0 && <Row align={"middle"}>
+                            <Col>{`总计${popuDatas ? popuDatas.length : 0}个要素`}</Col>
+                            <Col>
+                                <Button type="link" size="small" onClick={this.onView.bind(this)}>查看数据信息</Button>
+                            </Col>
+                        </Row>}
+                    </Row>
+                    <Row style={{ height: `calc(100% - ${height}px)` }}>
+                        <Spin style={{ left: "40%", position: "absolute", top: "45%" }} spinning={loading} tip={"加载数据中...."}>
 
+                        </Spin>
+                        <Row style={{ height: "33%", width: "100%" }}>
+                            {popuData.datas.length > 0 && <DynamicChart color={"#f7e2c5"} yAxisDatas={popuData.names} data={popuData.datas} time={time?.toString()} name={`人口前${count}名数据统计(万人)`} />}
+                        </Row>
+                        <Row style={{ height: "33%", width: "100%" }}>
+                            {densityData.datas.length > 0 && <DynamicChart color={"#b5d1d3"} yAxisDatas={densityData.names} data={densityData.datas} time={time?.toString()} name={`人口密度前${count}名数据统计(万人)`} />}
+                        </Row>
+                        <Row style={{ height: "33%", width: "100%" }}>
+                            {piePopuDatas && piePopuDatas.length > 0 && <PieChart data={piePopuDatas} time={time?.toString()} name={`人口分级统计区县(个)`} />}
+                        </Row>
+                    </Row>
                 </Card>
             </Row>
+            <Modal centered title={"数据列表"} footer={null} width={400} open={visible} onCancel={this.onClose.bind(this)}>
+                <Table dataSource={dataSource} pagination={false} scroll={{ y: 500 }} columns={columns} />
+            </Modal>
         </div>
     };
 }
