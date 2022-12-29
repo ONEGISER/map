@@ -231,16 +231,14 @@ export class Map extends React.Component<MapProps, MapState>{
         const self = this
         view.when(function () {
             //延迟2s加载
-            setTimeout(() => {
-                self.setState({
-                    created: true
-                }, () => {
-                    setTimeout(() => {
-                        //添加一些监听
-                        self.addLisener(view, self, self.populayer)
-                    }, 100);
-                })
-            }, 2000);
+            self.setState({
+                created: true
+            }, () => {
+                setTimeout(() => {
+                    //添加一些监听
+                    self.addLisener(view, self, self.populayer)
+                }, 50);
+            })
         })
     }
 
@@ -332,7 +330,7 @@ export class Map extends React.Component<MapProps, MapState>{
         view.whenLayerView(self.populayer).then((layerView: any) => {
             self.sceneLayerView = layerView;
             self.queryDiv = document.getElementById("queryDiv")
-            self.queryDiv.style.display = "block";
+            self.queryDiv.style.display = "block"
             //查询所有的要素
             setTimeout(() => {
                 self.populayer.when(() => {
@@ -605,12 +603,12 @@ export class Map extends React.Component<MapProps, MapState>{
                 key: 'nAME',
             },
             {
-                title: '人口',
+                title: '人口(万人)',
                 dataIndex: 'POPU',
                 key: 'POPU',
             },
             {
-                title: '人口密度',
+                title: '人口密度(人/km²)',
                 dataIndex: 'DENSITY',
                 key: 'DENSITY',
             },

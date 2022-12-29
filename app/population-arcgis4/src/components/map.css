@@ -7,3 +7,7 @@
     background-color: #fff;
     color: #242424;
 }
+
+#queryDiv{
+    display: none;
+}
