@@ -8,7 +8,7 @@ import GeoJSONLayer from "@arcgis/core/layers/GeoJSONLayer"
 import esriConfig from "@arcgis/core/config"
 import Legend from "@arcgis/core/widgets/Legend"
 import React from "react";
-import { Button, Card, Col, Modal, Row, Slider, Spin, Table } from "antd";
+import { Button, Card, Col, Modal, Row, Slider, Spin, Table, Typography } from "antd";
 import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel"
 import * as promiseUtils from "@arcgis/core/core/promiseUtils";
 import * as geometryEngine from "@arcgis/core/geometry/geometryEngine"
@@ -631,9 +631,9 @@ export class Map extends React.Component<MapProps, MapState>{
                 </Row></Card>}
 
             {/* 图例 */}
-            {created && <Card size="small" title={"图例"} id="legendDiv" style={{ padding: 10 }}></Card>}
+            {created && <Card size="small" title={"图例"} id="legendDiv" style={{ padding: 10, width: 220 }}></Card>}
             {/* 查询面板 */}
-            {created && <Card size="small" title={"几何图形查询"} id="queryDiv" style={{ padding: 10 }}>
+            {created && <Card size="small" title={"几何图形查询"} id="queryDiv" style={{ padding: 10,width:220 }}>
                 <Row style={{ width: "100%" }} >
                     <Button
                         style={{ marginLeft: 10 }}
@@ -679,6 +679,14 @@ export class Map extends React.Component<MapProps, MapState>{
                     </Button>
                 </Row>
             </Card>}
+
+            <Row justify={"center"} style={{ position: "absolute", left: 300, top: 15, right: 300 }}>
+                <Card >
+                    <div style={{ fontSize: 24 }}>
+                        山东省人口查询展示系统
+                    </div>
+                </Card>
+            </Row>
 
             <Row style={{ width, position: "absolute", left: 10, top: 210, bottom: 90 }}>
                 <Card title={"统计数据展示"} style={{ width: "100%", height: "100%", position: "relative" }} bodyStyle={{ width: "100%", height: `calc(100% - 40px)`, padding: 10 }} size="small">
