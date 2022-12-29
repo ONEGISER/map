@@ -511,15 +511,22 @@ export class Map extends React.Component<MapProps, MapState>{
         this.sketchViewModel.create(geometryType);
     }
 
-    clearGeometry() {
+    clearGeometry(showUi?: boolean) {
         this.sketchGeometry = null;
         this.sketchViewModel.cancel();
         this.sketchLayer.removeAll();
         this.bufferLayer.removeAll();
         this.clearHighlighting();
         this.clearCharts();
-        if (this.queryDiv)
-            this.queryDiv.style.display = "none";
+        if (!showUi) {
+            if (this.queryDiv)
+                this.queryDiv.style.display = "none";
+        }
+    }
+
+
+    clearHandler() {
+        this.clearGeometry(true)
     }
 
 
@@ -586,11 +593,17 @@ export class Map extends React.Component<MapProps, MapState>{
                     <Slider value={bufferSize} style={{ width: "100%" }} min={0} max={500} onChange={this.onSliderChange.bind(this)}></Slider>
                 </Row>
                 <Row justify={"center"} style={{ width: "100%" }}>
-                    <Button id="clearGeometry" danger type="dashed">
+                    <Button id="clearGeometry" danger type="dashed" onClick={this.clearHandler.bind(this)}>
                         清除
                     </Button>
                 </Row>
             </Card>}
+
+            <Row style={{ width: 300, position: "absolute", left:10, top: 210, bottom: 90 }}>
+                <Card title={"统计数据展示"} style={{ width: "100%", height: "100%" }} size="small">
+
+                </Card>
+            </Row>
         </div>
     };
 }
