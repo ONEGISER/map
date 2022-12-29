@@ -1,7 +1,7 @@
 {
   "name": "population-arcgis",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "dependencies": {
     "@arcgis/core": "^4.25.5",
     "antd": "^5.1.1",
@@ -17,7 +17,8 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "craco eject"
+    "eject": "craco eject",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -52,6 +53,8 @@
     "@types/react-dom": "^17.0.10",
     "babel-loader": "8.1.0",
     "copy-webpack-plugin": "^6.4.1",
+    "gh-pages": "^4.0.0",
     "web-vitals": "^1.1.2"
-  }
+  },
+  "homepage": "./"
 }
