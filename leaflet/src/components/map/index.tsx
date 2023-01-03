@@ -13,6 +13,12 @@ interface QueryResults {
 let map: L.Map
 let queryShowLayer: L.GeoJSON//全局查询高亮图层
 const weight = 4//线的宽度
+export const MapCenterPoint = {
+    x: 114.316200103,
+    y: 30.5810841269,
+    z: 10
+}
+const tk="0b79a07d2808103ab84aa56485c331a8"
 //路线颜色
 const colors: { [key: string]: any } = {
     '轨道交通1号线': { color: "#3080b7", weight, },
