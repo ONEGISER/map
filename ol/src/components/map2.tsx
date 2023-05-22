@@ -54,7 +54,7 @@ export class WebGLLayer extends Layer {
   }
 }
 
-export const Map = () => {
+export const Map2 = () => {
   // const [value, setValue] = React.useState<string | number>('99');
   useEffect(() => {
     const map = new OlMap({
