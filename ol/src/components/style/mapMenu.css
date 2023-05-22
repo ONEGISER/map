@@ -1,0 +1,20 @@
+.contextmenu {
+  position: absolute;
+  padding: 6px 0;
+  z-index: 9;
+  background-color: white;
+  width: 80px;
+  display: none;
+}
+
+.contextmenu ul {
+  padding: 6px 2px 0 2px;
+  list-style: none;
+}
+.contextmenu > ul > li {
+  text-align: center;
+  padding: 5px 0;
+}
+.contextmenu > ul > li:hover {
+  background-color: rgba(255, 0, 0, 0.5);
+}
