@@ -1,13 +1,15 @@
 import "./contextmenu.css";
 import { Overlay } from "ol";
 import OlMap from "ol/Map";
+import { transform } from "ol/proj";
 interface ContextmenuAction {
-  onClick?: (e: any) => void;
+  onClick?: (e: any, coordinate: [number, number]) => void;
 }
 export class Contextmenu {
   map: OlMap;
   el: HTMLElement;
   action?: ContextmenuAction;
+  coordinate?: [number, number];
   constructor(map: OlMap, el: HTMLElement, action?: ContextmenuAction) {
     this.map = map;
     this.el = el;
@@ -26,16 +28,21 @@ export class Contextmenu {
       });
       menu_overlay.setMap(this.map);
       menu_overlay.setPosition(coordinate);
+      this.coordinate = coordinate as [number, number];
     });
 
     this.map.on("singleclick", () => {
       this.close();
     });
     el.addEventListener("click", (e) => {
-      console.log(e);
       this.close();
       if (this.action?.onClick) {
-        this.action?.onClick(e);
+        const coord = transform(
+          this.coordinate as any,
+          "EPSG:3857",
+          "EPSG:4326"
+        );
+        this.action?.onClick(e, coord as [number, number]);
       }
     });
   }

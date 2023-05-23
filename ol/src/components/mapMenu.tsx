@@ -35,8 +35,8 @@ export const MapMenu = () => {
 
   async function addLayer(map: OlMap) {
     menu = new Contextmenu(map, ref, {
-      onClick: (e: any) => {
-        console.log(e);
+      onClick: (e: any, coord) => {
+        console.log(e, coord);
       },
     });
   }
