@@ -1,15 +1,16 @@
 import "./contextmenu.css";
 import { Overlay } from "ol";
 import OlMap from "ol/Map";
+import { Coordinate } from "ol/coordinate";
 import { transform } from "ol/proj";
 interface ContextmenuAction {
-  onClick?: (e: any, coordinate: [number, number]) => void;
+  onClick?: (e: any, coordinate: Coordinate) => void;
 }
 export class Contextmenu {
   map: OlMap;
   el: HTMLElement;
   action?: ContextmenuAction;
-  coordinate?: [number, number];
+  coordinate?: Coordinate;
   constructor(map: OlMap, el: HTMLElement, action?: ContextmenuAction) {
     this.map = map;
     this.el = el;
@@ -25,10 +26,11 @@ export class Contextmenu {
       const menu_overlay = new Overlay({
         element: el,
         // positioning: "top-left",
+        offset: [0, -20],
       });
       menu_overlay.setMap(this.map);
       menu_overlay.setPosition(coordinate);
-      this.coordinate = coordinate as [number, number];
+      this.coordinate = coordinate;
     });
 
     this.map.on("singleclick", () => {
@@ -36,14 +38,18 @@ export class Contextmenu {
     });
     el.addEventListener("click", (e) => {
       this.close();
-      if (this.action?.onClick) {
-        const coord = transform(
-          this.coordinate as any,
-          "EPSG:3857",
-          "EPSG:4326"
-        );
-        this.action?.onClick(e, coord as [number, number]);
+      if (this.action?.onClick && this.coordinate) {
+        const coord = transform(this.coordinate, "EPSG:3857", "EPSG:4326");
+        this.action?.onClick(e, coord);
       }
+    });
+
+    this.map.on("pointermove", (evt) => {
+      this.map.getTargetElement().style.cursor = this.map.hasFeatureAtPixel(
+        evt.pixel
+      )
+        ? "pointer"
+        : "";
     });
   }
 

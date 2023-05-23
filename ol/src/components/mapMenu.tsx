@@ -7,6 +7,7 @@ import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
 import { transform } from "ol/proj";
 import { Contextmenu } from "./utils/contextmenu";
+import { Draw } from "./utils/draw";
 let ref: any;
 let menu: any;
 export const MapMenu = () => {
@@ -30,13 +31,17 @@ export const MapMenu = () => {
       }),
     });
 
-    addLayer(map);
+    addMenu(map);
   }, []);
 
-  async function addLayer(map: OlMap) {
+  async function addMenu(map: OlMap) {
     menu = new Contextmenu(map, ref, {
       onClick: (e: any, coord) => {
         console.log(e, coord);
+
+        const draw = new Draw(map);
+        const result = transform(coord, "EPSG:4326", "EPSG:3857");
+        draw.addStartP(result);
       },
     });
   }
