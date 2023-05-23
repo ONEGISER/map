@@ -1,0 +1,27 @@
+.contextmenu {
+  padding: 0;
+  background-color: white;
+  display: none;
+}
+
+.contextmenu ul {
+  padding: 0;
+  list-style: none;
+}
+.contextmenu > ul > li {
+  text-align: center;
+  padding: 2px 5px;
+  cursor: pointer;
+}
+
+.contextmenu > ul > li > a {
+  text-decoration: none;
+  color: #1f1f1f;
+  font-size: 14px;
+}
+.contextmenu > ul > li:hover {
+  background-color: #3d72fd;
+  > a {
+    color: #fff;
+  }
+}
