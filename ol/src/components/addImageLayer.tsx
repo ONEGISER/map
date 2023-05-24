@@ -8,9 +8,6 @@ import ImageLayer from "ol/layer/Image"
 import XYZ from 'ol/source/XYZ';
 import ImageStatic from 'ol/source/ImageStatic';
 import { transformExtent, transform } from 'ol/proj'
-import { HomeSub2 } from "./homeSub2"
-import { HomeSub1 } from "./homeSub1";
-import url from "./1.png"
 export const Map = () => {
   // const [value, setValue] = React.useState<string | number>('99');
   useEffect(() => {

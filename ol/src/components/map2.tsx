@@ -9,8 +9,6 @@ import XYZ from 'ol/source/XYZ';
 import ImageStatic from 'ol/source/ImageStatic';
 import { transformExtent, transform } from 'ol/proj'
 import GeoJSON from 'ol/format/GeoJSON';
-import { HomeSub2 } from "./homeSub2"
-import { HomeSub1 } from "./homeSub1";
 import url from "./1.png"
 import Vector from "ol/source/Vector";
 import WebGLPointsLayer from 'ol/layer/WebGLPoints';

@@ -36,7 +36,7 @@ export class Draw {
   }
 
   addStartP(coordinate: Coordinate) {
-    const feature = this.createMarkerPoint(coordinate, "/imgs/起点.png");
+    const feature = this.createMarkerPoint(coordinate,startImg);
     this.vectorLayer.getSource()?.addFeature(feature);
   }
 }
