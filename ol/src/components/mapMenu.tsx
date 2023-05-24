@@ -48,12 +48,14 @@ export const MapMenu = () => {
     menu = new Contextmenu(map, ref, {
       onClick: (e: any, coord) => {
         const draw = new Draw(map, {
-          onChange: (feature,features, type) => {
-            console.log(feature,features, type);
+          onChange: (feature, features, type) => {
+            console.log(feature, features, type);
           },
         });
         const result = transform(coord, "EPSG:4326", "EPSG:3857");
-        draw.addStartP(result);
+        if (e.target.innerText === "起点") {
+          draw.addStartP(result);
+        }
       },
     });
   }
@@ -64,13 +66,13 @@ export const MapMenu = () => {
       <div ref={(_ref) => (ref = _ref)} className="contextmenu">
         <ul>
           <li>
-            <a href="#">设置中心</a>
+            <a href="#">起点</a>
           </li>
           <li>
-            <a href="#">加入地标</a>
+            <a href="#">途径点</a>
           </li>
           <li>
-            <a href="#">距离丈量</a>
+            <a href="#">终点</a>
           </li>
         </ul>
       </div>

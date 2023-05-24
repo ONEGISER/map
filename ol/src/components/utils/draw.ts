@@ -9,6 +9,9 @@ import VectorSource from "ol/source/Vector";
 import { Translate as PointerTranslate } from "ol/interaction";
 import Collection from "ol/Collection";
 import startImg from "./imgs/起点.png";
+import endImg from "./imgs/终点.png";
+import middleImg from "./imgs/途径点.png";
+
 import { transform } from "ol/proj";
 
 export type ActionType = "position" | "add" | "delete";
@@ -68,11 +71,27 @@ export class Draw {
     return feature;
   }
 
-  addStartP(coordinate: Coordinate) {
-    const feature = this.createMarkerPoint(coordinate, startImg, {
-      type: "起点",
-    });
+  addPoint(coordinate: Coordinate, img: string, properties: Object) {
+    const feature = this.createMarkerPoint(coordinate, img, properties);
     this.onChange(feature, "add");
     this.vectorLayer.getSource()?.addFeature(feature);
+  }
+
+  addStartP(coordinate: Coordinate) {
+    this.addPoint(coordinate, startImg, {
+      type: "起点",
+    });
+  }
+
+  addMiddleP(coordinate: Coordinate) {
+    this.addPoint(coordinate, middleImg, {
+      type: "途径点",
+    });
+  }
+
+  addEndP(coordinate: Coordinate) {
+    this.addPoint(coordinate, endImg, {
+      type: "终点",
+    });
   }
 }
