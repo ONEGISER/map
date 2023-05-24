@@ -8,6 +8,7 @@ import XYZ from "ol/source/XYZ";
 import { transform } from "ol/proj";
 import { Contextmenu } from "./utils/contextmenu";
 import { Draw } from "./utils/draw";
+
 let ref: any;
 let menu: any;
 export const MapMenu = () => {
