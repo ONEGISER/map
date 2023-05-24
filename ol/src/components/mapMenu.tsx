@@ -1,6 +1,6 @@
 import "./map.css";
 import "ol/ol.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import OlMap from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
@@ -8,10 +8,12 @@ import XYZ from "ol/source/XYZ";
 import { transform } from "ol/proj";
 import { Contextmenu } from "./utils/contextmenu";
 import { Draw } from "./utils/draw";
+import Feature from "ol/Feature";
 
 let ref: any;
 let menu: any;
 export const MapMenu = () => {
+  const [features, setFeatures] = useState<any[]>([]);
   useEffect(() => {
     const map = new OlMap({
       target: "map",
@@ -45,36 +47,58 @@ export const MapMenu = () => {
   }, []);
 
   async function addMenu(map: OlMap) {
+    const draw = new Draw(map, {
+      onChange: (feature, features, type) => {
+        const datas:any[] = [];
+        features.map((feature) => {
+          datas.push(feature.getProperties());
+        });
+        setFeatures(datas);
+      },
+    });
     menu = new Contextmenu(map, ref, {
       onClick: (e: any, coord) => {
-        const draw = new Draw(map, {
-          onChange: (feature, features, type) => {
-            console.log(feature, features, type);
-          },
-        });
         const result = transform(coord, "EPSG:4326", "EPSG:3857");
         if (e.target.innerText === "起点") {
           draw.addStartP(result);
+        } else if (e.target.innerText === "终点") {
+          draw.addEndP(result);
+        } else if (e.target.innerText === "途径点") {
+          draw.addMiddleP(result);
         }
       },
     });
   }
 
+  const getUi = () => {
+    console.log(features, "oooo");
+
+    if (features.length === 0) {
+      return (
+        <li>
+          <a href="#">起点</a>
+        </li>
+      );
+    } else if (features.length === 1) {
+      return (
+        <li>
+          <a href="#">终点</a>
+        </li>
+      );
+    } else {
+      return (
+        <li>
+          <a href="#">途径点</a>
+        </li>
+      );
+    }
+  };
+
   return (
     <div>
       <div className="lmap" id="map"></div>
       <div ref={(_ref) => (ref = _ref)} className="contextmenu">
-        <ul>
-          <li>
-            <a href="#">起点</a>
-          </li>
-          <li>
-            <a href="#">途径点</a>
-          </li>
-          <li>
-            <a href="#">终点</a>
-          </li>
-        </ul>
+        <ul>{getUi()}</ul>
       </div>
     </div>
   );

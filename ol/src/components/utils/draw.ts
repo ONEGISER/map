@@ -24,22 +24,10 @@ export class Draw {
     source: new VectorSource(),
   });
   action: DrawAction;
-  iconTranslate: PointerTranslate;
   collection: Collection<Feature> = new Collection();
   constructor(map: OlMap, action: DrawAction) {
     this.map = map;
     this.map.addLayer(this.vectorLayer);
-    this.iconTranslate = new PointerTranslate({
-      features: this.collection,
-    });
-    this.map.addInteraction(this.iconTranslate);
-    this.iconTranslate.on("translateend", (event) => {
-      if (event.features) {
-        const array = event.features.getArray();
-        console.log(array);
-        this.onChange(array[0], "position");
-      }
-    });
     this.action = action;
   }
 
@@ -75,6 +63,17 @@ export class Draw {
     const feature = this.createMarkerPoint(coordinate, img, properties);
     this.onChange(feature, "add");
     this.vectorLayer.getSource()?.addFeature(feature);
+    const iconTranslate = new PointerTranslate({
+      features: new Collection([feature]),
+    });
+    this.map.addInteraction(iconTranslate);
+    iconTranslate.on("translateend", (event) => {
+      if (event.features) {
+        const array = event.features.getArray();
+        console.log(array);
+        this.onChange(array[0], "position");
+      }
+    });
   }
 
   addStartP(coordinate: Coordinate) {
