@@ -19,8 +19,13 @@ export class Contextmenu {
   }
 
   init(el: HTMLElement) {
-    this.map?.getViewport().addEventListener("contextmenu", (event: any) => {
+    this.map?.getViewport().addEventListener("contextmenu", (event) => {
       event.preventDefault();
+      const isFeature = this.map.hasFeatureAtPixel([event.x, event.y]);
+      if (isFeature) {
+        return;
+      }
+
       const coordinate = this.map.getEventCoordinate(event);
       if (el?.style) el.style.display = "block";
       const menu_overlay = new Overlay({
