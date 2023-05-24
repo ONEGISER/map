@@ -17,8 +17,17 @@ export const MapMenu = () => {
       target: "map",
       layers: [
         new TileLayer({
+          // title: "天地图矢量图层",
           source: new XYZ({
-            url: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=4267820f43926eaf808d61dc07269beb",
+            wrapX: false,
+          }),
+        }),
+        new TileLayer({
+          // title: "天地图矢量图层注记",
+          source: new XYZ({
+            url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=4267820f43926eaf808d61dc07269beb",
+            wrapX: false,
           }),
         }),
       ],
@@ -38,9 +47,11 @@ export const MapMenu = () => {
   async function addMenu(map: OlMap) {
     menu = new Contextmenu(map, ref, {
       onClick: (e: any, coord) => {
-        console.log(e, coord);
-
-        const draw = new Draw(map);
+        const draw = new Draw(map, {
+          onChange: (feature,features, type) => {
+            console.log(feature,features, type);
+          },
+        });
         const result = transform(coord, "EPSG:4326", "EPSG:3857");
         draw.addStartP(result);
       },

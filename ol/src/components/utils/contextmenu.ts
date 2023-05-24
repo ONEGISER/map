@@ -53,7 +53,7 @@ export class Contextmenu {
       this.map.getTargetElement().style.cursor = this.map.hasFeatureAtPixel(
         evt.pixel
       )
-        ? "pointer"
+        ? "grab"
         : "";
     });
   }
