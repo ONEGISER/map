@@ -6,10 +6,10 @@ import { BillboardGraphics, Cartesian3, CesiumTerrainProvider, defined, Geograph
 import { Popup } from "./popup"
 export const Map = () => {
     useEffect(() => {
-        const key = Keys.tdt
-        const attribution = '&copy; <a href="https://gsjlxkgc.com/">甘肃记录小康工程</a> 提供数据'
-        const dom = document.createElement("div")
-        dom.innerHTML = attribution
+        const key = "4267820f43926eaf808d61dc07269beb"
+        // const attribution = '&copy; <a href="https://gsjlxkgc.com/">甘肃记录小康工程</a> 提供数据'
+        // const dom = document.createElement("div")
+        // dom.innerHTML = attribution
         const viewer = new Viewer('map', {
             imageryProvider: new WebMapTileServiceImageryProvider({
                 url: "http://t{s}.tianditu.com/img_c/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=c&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles&tk=" + key,
@@ -27,13 +27,13 @@ export const Map = () => {
             selectionIndicator: false,
             animation: false,
             timeline: false,
-            creditContainer: dom,
+            // creditContainer: dom,
             baseLayerPicker: false
         })
         viewer.camera.flyTo({
             destination: Cartesian3.fromDegrees(103.742546, 36.06, 30000),
         })
-        getDatas(viewer)
+        // getDatas(viewer)
     })
 
     function getDatas(viewer: Viewer) {
