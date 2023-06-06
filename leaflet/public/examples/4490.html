@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Access multiple location services</title>
+    <!-- Load Leaflet from CDN -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+      crossorigin=""
+    ></script>
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
+    <script src="https://unpkg.com/esri-leaflet-vector@4.0.2/dist/esri-leaflet-vector.js"></script>
+
+    <script src="/libs/proj4-compressed.js"></script>
+    <script src="/libs/proj4leaflet.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        color: #323232;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+
+    <script>
+      const CRS_4490 = new L.Proj.CRS(
+        "EPSG:4490",
+        "+proj=longlat +ellps=GRS80 +no_defs",
+        {
+          resolutions: [
+            1.4078260157100582, 0.7031250000000002, 0.3515625000000001,
+            0.17578125000000006, 0.08789062500000003, 0.043945312500000014,
+            0.021972656250000007, 0.010986328125000003, 0.005493164062500002,
+            0.002746582031250001, 0.001373291015625, 6.866455078125e-4,
+            3.4332275390625e-4, 1.71661376953125e-4, 8.58306884765625e-5,
+            4.291534423828125e-5, 2.1457672119140625e-5, 1.0728836059570312e-5,
+            5.364418029785156e-6, 2.682209064925356e-6, 1.3411045324626732e-6,
+          ],
+          origin: [-180, 90],
+        }
+      );
+      const map = L.map("map", {
+        minZoom: 2,
+        crs: CRS_4490,
+      }).setView([25, 102.73], 9); //Latitude, longitude
+      new L.esri.tiledMapLayer({
+        url: "https://maps.ynmap.cn/arcgis/rest/services/TdtYn/tdtYnImg100cm2000/MapServer/",
+        pane: "overlayPane",
+      }).addTo(map);
+
+      async function loadGeojson() {
+        const response = await fetch("/datas/4490geojson.geojson");
+        const obj = await response.json();
+        L.geoJSON(obj, {
+          style: {
+            color: "#ff0000",
+            weight: 5,
+            opacity: 0.65,
+          },
+        }).addTo(map);
+      }
+
+      loadGeojson();
+    </script>
+  </body>
+</html>
