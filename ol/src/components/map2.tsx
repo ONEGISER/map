@@ -16,7 +16,8 @@ import Layer from 'ol/layer/Layer';
 import VectorSource from 'ol/source/Vector';
 import WebGLVectorLayerRenderer from 'ol/renderer/webgl/VectorLayer';
 import { asArray } from 'ol/color';
-import { packColor } from 'ol/renderer/webgl/shaders';
+import { packColor, parseLiteralStyle } from "ol/webgl/styleparser.js";
+
 export const GradeColors: { [key: string]: string } = {
   '优': '#33cc33',
   '良': '#60fae7',
@@ -48,7 +49,7 @@ export class WebGLLayer extends Layer {
           },
         },
       },
-    }) as any
+    } as any) as any
   }
 }
 
