@@ -79,7 +79,7 @@ export class WebGLLayer extends Layer {
   }
 }
 
-export const WebglPoint = () => {
+export const WebglPoint2 = () => {
   useEffect(() => {
     const map = new OlMap({
       target: "map",
@@ -135,29 +135,20 @@ export const WebglPoint = () => {
         symbol: {
           symbolType: "circle",
           size: [
-            "interpolate",
-            ["linear"],
-            ["get", "mass"],
-            100,
-            10,
-            10000,
-            20,
-            10000000,
-            50,
+            "*",
+            ["interpolate", ["linear"], ["get", "mass"], 0, 8, 200000, 26],
+            ["-", 1.75, ["*", animRatio, 0.75]],
           ],
           color: [
             "interpolate",
             ["linear"],
-            ["get", "year"],
-            1000,
-            "#ff14c3",
-            1800,
-            "#ff621d",
-            2000,
-            "#ffed02",
-            2023,
-            "#00ff67",
+            animRatio,
+            0,
+            newColor,
+            1,
+            oldColor,
           ],
+          opacity: ["-", 1.0, ["*", animRatio, 0.75]],
         },
       },
       disableHitDetection: true,
