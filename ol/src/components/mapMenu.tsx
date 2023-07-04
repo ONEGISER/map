@@ -9,12 +9,15 @@ import { transform } from "ol/proj";
 import { Contextmenu } from "./utils/contextmenu";
 import { Draw } from "./utils/draw";
 import Feature from "ol/Feature";
-
+import { fromEPSGCode } from "ol/proj/proj4";
 let ref: any;
 let menu: any;
 export const MapMenu = () => {
   const [features, setFeatures] = useState<any[]>([]);
   useEffect(() => {
+    const result = fromEPSGCode("ESPG:4490");
+    console.log(result);
+    
     const map = new OlMap({
       target: "map",
       layers: [
@@ -49,7 +52,7 @@ export const MapMenu = () => {
   async function addMenu(map: OlMap) {
     const draw = new Draw(map, {
       onChange: (feature, features, type) => {
-        const datas:any[] = [];
+        const datas: any[] = [];
         features.map((feature) => {
           datas.push(feature.getProperties());
         });

@@ -1,8 +1,8 @@
 import './App.css';
-import { Map } from "./components/mapViewer"
+import { MapExt } from "./components/mapViewer"
 function App() {
   return (
-    <Map />
+    <MapExt />
   )
 }
 
