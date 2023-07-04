@@ -79,7 +79,7 @@ export class WebGLLayer extends Layer {
   }
 }
 
-export const Map = () => {
+export const VectorMap = () => {
   useEffect(() => {
     const map = new OlMap({
       target: "map",
@@ -179,7 +179,7 @@ export const Map = () => {
     };
 
     let baseUrl =
-      "http://60.13.54.71:30119/shanhong-geoserver/" + "/gwc/service/wmts";
+      "http://x:x/geoserver/" + "/gwc/service/wmts";
     let url = baseUrl + "?";
 
     for (let param in vectorTileParams) {
