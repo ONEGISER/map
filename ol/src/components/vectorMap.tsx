@@ -80,14 +80,33 @@ export class WebGLLayer extends Layer {
   }
 }
 
+const mapURL = {
+  "aMap-img-d":
+    "http://webst0{1-4}.is.autonavi.com/appmaptile?style=6&scale=1&x={x}&y={y}&z={z}",
+  "aMap-img":
+    "http://webst0{1-4}.is.autonavi.com/appmaptile?style=6&scale=2&x={x}&y={y}&z={z}",
+  "aMap-vec-d":
+    "http://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=1&style=8&x={x}&y={y}&z={z}",
+  "aMap-vec":
+    "http://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=2&style=8&x={x}&y={y}&z={z}",
+  "aMap-roadLabel":
+    "http://webst0{1-4}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}",
+};
+
+
 export const VectorMap = () => {
   useEffect(() => {
     const map = new OlMap({
       target: "map",
       layers: [
+        // new TileLayer({
+        //   source: new XYZ({
+        //     url: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        //   }),
+        // }),
         new TileLayer({
           source: new XYZ({
-            url: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            url: mapURL["aMap-vec-d"],
           }),
         }),
       ],
@@ -163,7 +182,7 @@ export const VectorMap = () => {
     ];
 
     // const layer = "surv_evalu:WATA";
-    const layer = "surv_evalu:BSNSSINFO";
+    const layer = "surv_evalu:DANAD";
     let gridsetName = "3857";
     let style = "";
     let vectorTileParams: any = {
@@ -180,7 +199,7 @@ export const VectorMap = () => {
     };
 
     let baseUrl =
-      "http://x:x/geoserver/" + "/gwc/service/wmts";
+      "http://60.13.54.71:30119/shanhong-geoserver/" + "/gwc/service/wmts";
     let url = baseUrl + "?";
 
     for (let param in vectorTileParams) {
@@ -189,15 +208,15 @@ export const VectorMap = () => {
 
     const vectorLayer = new VectorTileLayer({
       style: (feature: any) => {
-        // const style = new Style({
-        //   stroke: new Stroke({
-        //     color: "rgb(21,21,20)",
-        //     width: 2,
-        //   }),
-        //   fill: new Fill({
-        //     color: "rgb(225,77,46)",
-        //   }),
-        // });
+        const style = new Style({
+          stroke: new Stroke({
+            color: "rgb(21,21,20)",
+            width: 1,
+          }),
+          fill: new Fill({
+            color: "rgb(225,77,46)",
+          }),
+        });
 
         // const style = new Style({
         //   image: new Circle({
@@ -208,19 +227,19 @@ export const VectorMap = () => {
         //   }),
         // });
 
-        const style=new Style({
-          image: new Icon({
-            anchor: [0.5, 0.5],
-            src: svg,
-            scale: [0.8, 0.8],
-          }),
-        })
-        const properties = feature.getProperties();
-        if (properties) {
-          if (properties?.ADCD?.indexOf("6229") > -1) {
-            return style;
-          }
-        }
+        // const style=new Style({
+        //   image: new Icon({
+        //     anchor: [0.5, 0.5],
+        //     src: svg,
+        //     scale: [0.8, 0.8],
+        //   }),
+        // })
+        // const properties = feature.getProperties();
+        // if (properties) {
+        //   if (properties?.ADCD?.indexOf("6229") > -1) {
+        //     return style;
+        //   }
+        // }
         return style
           ? style
           : new Style({

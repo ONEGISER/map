@@ -16,13 +16,13 @@ import Layer from "ol/layer/Layer";
 import VectorSource from "ol/source/Vector";
 import WebGLVectorLayerRenderer from "ol/renderer/webgl/VectorLayer";
 import { asArray } from "ol/color";
+import { packColor, parseLiteralStyle } from "ol/webgl/styleparser.js";
+
 import MVT from "ol/format/MVT";
 import VectorTileLayer from "ol/layer/VectorTile";
-import { Fill, Style, Stroke, Icon } from "ol/style";
+import { Fill, Style, Stroke, Icon,Circle } from "ol/style";
 import Projection from "ol/proj/Projection";
 import svg from "../icon.svg";
-import png from "../起点.png";
-
 import {
   ImageArcGISRest,
   WMTS,
@@ -30,92 +30,72 @@ import {
   VectorTile as VectorTileSource,
 } from "ol/source";
 import WMTSTileGrid from "ol/tilegrid/WMTS";
-import VectorTile from "ol/layer/VectorTile.js";
-import WebGLVectorTileLayerRenderer from "ol/renderer/webgl/VectorTileLayer.js";
-import { packColor, parseLiteralStyle } from "ol/webgl/styleparser.js";
-const result = parseLiteralStyle({
-  "fill-color": ["get", "fillColor"],
-  "stroke-color": ["get", "strokeColor"],
-  "stroke-width": ["get", "strokeWidth"],
-  symbol: {
-    // symbolType: "circle",
-    // size: 20,
-    // color: "#e83916",
-    symbolType: 'image',
-      src: 'imgs/icon.png',
-      size: [18, 28],
-      color: 'lightyellow',
-      rotateWithView: false,
-      offset: [0, 9],
-  },
-} as any);
-class WebGLVectorTileLayer extends VectorTile {
-  createRenderer(): any {
-    return new WebGLVectorTileLayerRenderer(this, {
-      style: {
-        fill: {
-          fragment: result.builder.getFillFragmentShader(),
-          vertex: result.builder.getFillVertexShader(),
-        },
-        stroke: {
-          fragment: result.builder.getStrokeFragmentShader(),
-          vertex: result.builder.getStrokeVertexShader(),
-        },
-        symbol: {
-          fragment: result.builder.getSymbolFragmentShader(),
-          vertex: result.builder.getSymbolVertexShader(),
-        },
-        attributes: {
-          fillColor: {
-            size: 3,
-            callback: (feature: any) => {
-              const self: any = this;
-              console.log(feature);
-              const style = self.getStyle()(feature, 1)[0];
-              console.log(style);
 
-              const color = asArray(style?.getFill()?.getColor() || "#5cb85c");
-              return packColor(color);
-            },
+export const GradeColors: { [key: string]: string } = {
+  优: "#33cc33",
+  良: "#60fae7",
+  中: "#dfed73",
+  次: "#ffc691",
+  差: "#f95302",
+  无: "#fde981",
+};
+export class WebGLLayer extends Layer {
+  createRenderer(): any {
+    let self: any = this;
+    return new WebGLVectorLayerRenderer(this, {
+      fill: {
+        attributes: {
+          color: function (feature: any) {
+            const color = asArray(feature.get("COLOR") || "#eee");
+            color[3] = 0.85;
+            return packColor(color);
           },
-          strokeColor: {
-            size: 2,
-            callback: (feature: any) => {
-              const self: any = this;
-              const style = self.getStyle()(feature, 1)[0];
-              // const color = asArray(style?.getStroke()?.getColor() || "#eee");
-              const color = asArray("#e83916");
-              return packColor(color);
-            },
-          },
-          strokeWidth: {
-            size: 1,
-            callback: (feature: any) => {
-              const self: any = this;
-              const style = self.getStyle()(feature, 1)[0];
-              return style?.getStroke()?.getWidth() || 0;
-            },
+          opacity: function () {
+            return 0.6;
           },
         },
-      } as any,
-    });
+      },
+      stroke: {
+        attributes: {
+          color: function (feature: any) {
+            const _index = self.values_?._index;
+            const properties = feature?.values_;
+            const grade = properties[`${_index}Grade`];
+            const _color = GradeColors[grade]
+              ? GradeColors[grade]
+              : GradeColors.无;
+            const color = asArray(_color);
+            color[3] = 1;
+            return packColor(color);
+          },
+          width: function () {
+            return 3;
+          },
+          opacity: function () {
+            return 1;
+          },
+        },
+      },
+    } as any) as any;
   }
 }
 
-export const VectorTileMap = () => {
-  const mapURL = {
-    "aMap-img-d":
-      "http://webst0{1-4}.is.autonavi.com/appmaptile?style=6&scale=1&x={x}&y={y}&z={z}",
-    "aMap-img":
-      "http://webst0{1-4}.is.autonavi.com/appmaptile?style=6&scale=2&x={x}&y={y}&z={z}",
-    "aMap-vec-d":
-      "http://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=1&style=8&x={x}&y={y}&z={z}",
-    "aMap-vec":
-      "http://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=2&style=8&x={x}&y={y}&z={z}",
-    "aMap-roadLabel":
-      "http://webst0{1-4}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}",
-  };
+const mapURL = {
+  "aMap-img-d":
+    "http://webst0{1-4}.is.autonavi.com/appmaptile?style=6&scale=1&x={x}&y={y}&z={z}",
+  "aMap-img":
+    "http://webst0{1-4}.is.autonavi.com/appmaptile?style=6&scale=2&x={x}&y={y}&z={z}",
+  "aMap-vec-d":
+    "http://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=1&style=8&x={x}&y={y}&z={z}",
+  "aMap-vec":
+    "http://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=2&style=8&x={x}&y={y}&z={z}",
+  "aMap-roadLabel":
+    "http://webst0{1-4}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}",
+};
 
+
+
+export const VectorMapPoint = () => {
   useEffect(() => {
     const map = new OlMap({
       target: "map",
@@ -203,7 +183,7 @@ export const VectorTileMap = () => {
     ];
 
     // const layer = "surv_evalu:WATA";
-    const layer = "surv_evalu:BSNSSINFO";
+    const layer = "surv_evalu:VILLAGE";
     let gridsetName = "3857";
     let style = "";
     let vectorTileParams: any = {
@@ -227,7 +207,48 @@ export const VectorTileMap = () => {
       url = url + param + "=" + vectorTileParams[param] + "&";
     }
 
-    const vectorLayer = new WebGLVectorTileLayer({
+    const vectorLayer = new VectorTileLayer({
+      style: (feature: any) => {
+        // const style = new Style({
+        //   stroke: new Stroke({
+        //     color: "rgb(21,21,20)",
+        //     width: 1,
+        //   }),
+        //   fill: new Fill({
+        //     color: "rgb(225,77,46)",
+        //   }),
+        // });
+
+        const style = new Style({
+          image: new Circle({
+            radius: 2,
+            fill: new Fill({
+              color: "red",
+            } as any) as any,
+          } as any),
+        } as any);
+
+        // const style=new Style({
+        //   image: new Icon({
+        //     anchor: [0.5, 0.5],
+        //     src: svg,
+        //     scale: [0.8, 0.8],
+        //   }),
+        // })
+        // const properties = feature.getProperties();
+        // if (properties) {
+        //   if (properties?.ADCD?.indexOf("6229") > -1) {
+        //     return style;
+        //   }
+        // }
+        return style
+          ? style
+          : new Style({
+              fill: new Fill({
+                color: "rgba(225,77,46,0)",
+              }),
+            });
+      },
       opacity: 1,
       zIndex: 11,
       projection: projection,
