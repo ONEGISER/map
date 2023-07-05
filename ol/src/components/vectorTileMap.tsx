@@ -38,11 +38,11 @@ const result = parseLiteralStyle({
   symbol: {
     symbolType: "circle",
     size: 8,
-    color: "#777",
+    color: "#e83916",
   },
 } as any);
 class WebGLVectorTileLayer extends VectorTile {
-  createRenderer():any {
+  createRenderer(): any {
     return new WebGLVectorTileLayerRenderer(this, {
       style: {
         fill: {
@@ -59,28 +59,31 @@ class WebGLVectorTileLayer extends VectorTile {
         },
         attributes: {
           fillColor: {
-            size: 2,
+            size: 3,
             callback: (feature: any) => {
-              const self:any=this
-
+              const self: any = this;
+              console.log(feature);
               const style = self.getStyle()(feature, 1)[0];
-              const color = asArray(style?.getFill()?.getColor() || "#eee");
+              console.log(style);
+              
+              const color = asArray(style?.getFill()?.getColor() || '#5cb85c');
               return packColor(color);
             },
           },
           strokeColor: {
             size: 2,
             callback: (feature: any) => {
-              const self:any=this
+              const self: any = this;
               const style = self.getStyle()(feature, 1)[0];
-              const color = asArray(style?.getStroke()?.getColor() || "#eee");
+              // const color = asArray(style?.getStroke()?.getColor() || "#eee");
+              const color = asArray("#e83916");
               return packColor(color);
             },
           },
           strokeWidth: {
             size: 1,
-            callback: (feature:any) => {
-              const self:any=this
+            callback: (feature: any) => {
+              const self: any = this;
               const style = self.getStyle()(feature, 1)[0];
               return style?.getStroke()?.getWidth() || 0;
             },
@@ -190,7 +193,8 @@ export const VectorTileMap = () => {
       TILEROW: "{y}",
     };
 
-    let baseUrl = "http://x:x/geoserver/" + "/gwc/service/wmts";
+    let baseUrl =
+      "http://xx.xx.xx.xx:xx/geoserver/" + "/gwc/service/wmts";
     let url = baseUrl + "?";
 
     for (let param in vectorTileParams) {
@@ -198,47 +202,6 @@ export const VectorTileMap = () => {
     }
 
     const vectorLayer = new WebGLVectorTileLayer({
-      // style: (feature: any) => {
-      //   // const style = new Style({
-      //   //   stroke: new Stroke({
-      //   //     color: "rgb(21,21,20)",
-      //   //     width: 2,
-      //   //   }),
-      //   //   fill: new Fill({
-      //   //     color: "rgb(225,77,46)",
-      //   //   }),
-      //   // });
-
-      //   // const style = new Style({
-      //   //   image: new Circle({
-      //   //     radius: 2,
-      //   //     fill: new Fill({
-      //   //       color: "red",
-      //   //     }),
-      //   //   }),
-      //   // });
-
-      //   const style = new Style({
-      //     image: new Icon({
-      //       anchor: [0.5, 0.5],
-      //       src: svg,
-      //       scale: [0.8, 0.8],
-      //     }),
-      //   });
-      //   const properties = feature.getProperties();
-      //   if (properties) {
-      //     if (properties?.ADCD?.indexOf("6229") > -1) {
-      //       return style;
-      //     }
-      //   }
-      //   return style
-      //     ? style
-      //     : new Style({
-      //         fill: new Fill({
-      //           color: "rgba(225,77,46,0)",
-      //         }),
-      //       });
-      // },
       opacity: 1,
       zIndex: 11,
       projection: projection,
