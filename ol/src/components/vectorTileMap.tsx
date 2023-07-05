@@ -38,15 +38,15 @@ const result = parseLiteralStyle({
   "stroke-color": ["get", "strokeColor"],
   "stroke-width": ["get", "strokeWidth"],
   symbol: {
-    // symbolType: "circle",
-    // size: 20,
-    // color: "#e83916",
-    symbolType: 'image',
-      src: 'imgs/icon.png',
-      size: [18, 28],
-      color: 'lightyellow',
-      rotateWithView: false,
-      offset: [0, 9],
+    symbolType: "circle",
+    size: 10,
+    color: "#e83916",
+    // symbolType: 'image',
+    //   src: 'imgs/icon.png',
+    //   size: [18, 28],
+    //   color: 'lightyellow',
+    //   rotateWithView: false,
+    //   offset: [0, 9],
   },
 } as any);
 class WebGLVectorTileLayer extends VectorTile {
@@ -70,9 +70,7 @@ class WebGLVectorTileLayer extends VectorTile {
             size: 3,
             callback: (feature: any) => {
               const self: any = this;
-              console.log(feature);
               const style = self.getStyle()(feature, 1)[0];
-              console.log(style);
 
               const color = asArray(style?.getFill()?.getColor() || "#5cb85c");
               return packColor(color);
@@ -203,7 +201,7 @@ export const VectorTileMap = () => {
     ];
 
     // const layer = "surv_evalu:WATA";
-    const layer = "surv_evalu:BSNSSINFO";
+    const layer = "surv_evalu:VILLAGE";
     let gridsetName = "3857";
     let style = "";
     let vectorTileParams: any = {
@@ -248,6 +246,13 @@ export const VectorTileMap = () => {
     } as any);
 
     map.addLayer(vectorLayer);
+
+    map.on('pointermove', function (ev) {
+      map.forEachFeatureAtPixel(ev.pixel, function (feature) {
+        console.log(feature);
+        
+      });
+    });
   }
 
   return <div className="lmap" id="map"></div>;
