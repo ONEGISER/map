@@ -1,8 +1,8 @@
 import './App.css';
-import { MapExt } from "./components/mapViewer"
+import { MyRoutes } from './myRoutes';
 function App() {
   return (
-    <MapExt />
+    <MyRoutes />
   )
 }
 

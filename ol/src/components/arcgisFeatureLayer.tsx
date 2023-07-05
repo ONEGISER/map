@@ -38,8 +38,7 @@ export const ArcgisFeatureLayer = () => {
 
   async function addLayer(map: OlMap) {
     const serviceUrl =
-      "https://services-eu1.arcgis.com/NPIbx47lsIiu2pqz/ArcGIS/rest/services/" +
-      "Neptune_Coastline_Campaign_Open_Data_Land_Use_2014/FeatureServer/";
+      "http://60.13.54.71:30119/arcgis/rest/services/GSshanhong/%E9%98%B2%E6%B2%BB%E5%8C%BA%E5%9F%BA%E6%9C%AC%E6%83%85%E5%86%B5_%E8%B0%83%E6%9F%A5%E8%AF%84%E4%BB%B7/MapServer/";
     const layer = "0";
     const vectorSource = new VectorSource({
       format: new EsriJSON(),
@@ -78,13 +77,9 @@ export const ArcgisFeatureLayer = () => {
       },
       strategy: tileStrategy(
         createXYZ({
-          tileSize: 512,
+          tileSize: 32,
         })
       ),
-      attributions:
-        "University of Leicester (commissioned by the " +
-        '<a href="https://www.arcgis.com/home/item.html?id=' +
-        'd5f05b1dc3dd4d76906c421bc1727805">National Trust</a>)',
     });
 
     const vector = new VectorLayer({

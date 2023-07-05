@@ -179,7 +179,7 @@ export const MapExt = () => {
     });
 
     let layer = new MapImageLayer({
-      url: "http://60.13.54.71:30119/arcgis/rest/services/GSshanhong/%E9%98%B2%E6%B2%BB%E5%8C%BA%E5%9F%BA%E6%9C%AC%E6%83%85%E5%86%B5_%E8%B0%83%E6%9F%A5%E8%AF%84%E4%BB%B7/MapServer",
+      url: "http://xx.xx.xx.xx:xx/arcgis/rest/services/GSshanhong/%E9%98%B2%E6%B2%BB%E5%8C%BA%E5%9F%BA%E6%9C%AC%E6%83%85%E5%86%B5_%E8%B0%83%E6%9F%A5%E8%AF%84%E4%BB%B7/MapServer",
       sublayers: [
         {
           id: 1,
