@@ -97,7 +97,7 @@ export const ArcgisFeatureLayer = () => {
       // },
       opacity: 0.7,
     });
-    // map.addLayer(vector);
+    map.addLayer(vector);
   }
 
   return <div className="lmap" id="map"></div>;
