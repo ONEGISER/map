@@ -106,15 +106,15 @@ export const Map = () => {
     // const vectorSource = new VectorSource({
     //   features,
     // })
-    const vectorSource = new VectorSource({
-      url: "https://openlayers.org/data/vector/ecoregions.json",
-      format: new GeoJSON(),
-    });
-    const vectorLayer = new WebGLLayer({
-      source: vectorSource,
-    });
+    // const vectorSource = new VectorSource({
+    //   url: "https://openlayers.org/data/vector/ecoregions.json",
+    //   format: new GeoJSON(),
+    // });
+    // const vectorLayer = new WebGLLayer({
+    //   source: vectorSource,
+    // });
    
-    map.addLayer(vectorLayer);
+    // map.addLayer(vectorLayer);
   }
 
   return <div className="lmap" id="map"></div>;
