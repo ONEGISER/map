@@ -24,9 +24,9 @@ module.exports = {
             //移除cesium警告
             config.module.unknownContextCritical = false
             config.module.unknownContextRegExp = /\/cesium\/cesium\/Source\/Core\/buildModuleUrl\.js/
-            // config.externals = [{
-            //     'cesium': 'Cesium',
-            // },]
+            config.externals = [{
+                'cesium': 'Cesium',
+            },]
             return config
         },
     },

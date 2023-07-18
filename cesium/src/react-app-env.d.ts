@@ -4,3 +4,5 @@ declare const Keys: {
     tdt: string
 }
 
+declare  var Cesium:any
+

@@ -25,7 +25,7 @@ export class Popup {
 
     showInfo(position: Cartesian2, html: string) {
         if (this.viewer) {
-            const ray = this.viewer.camera.getPickRay(position);
+            const ray:any = this.viewer.camera.getPickRay(position);
             this.cartesian3 = this.viewer.scene.globe.pick(ray, this.viewer.scene);
             this.calculatePosition(position)
             this.info(html)
