@@ -37,14 +37,11 @@ export const Map = () => {
       baseLayerPicker: false,
     });
 
-    const _rosurce: any = Resource;
-
     viewer.camera.flyTo({
       destination: Cartesian3.fromDegrees(102.68587, 37.94787, 30000),
     });
     // getDatas(viewer)
-
-  })
+  });
 
   function getDatas(viewer: Viewer) {
     axios.get("/index/index/get_data.html").then((response) => {
