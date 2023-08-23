@@ -24,7 +24,7 @@ export const Map = () => {
     // const dom = document.createElement("div")
     // dom.innerHTML = attribution
     let wmts = new Cesium.ArcGisMapServerImageryProvider({
-      url: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer",
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer",
     });
 
     const viewer = new Viewer("map", {
@@ -37,10 +37,36 @@ export const Map = () => {
       baseLayerPicker: false,
     });
 
-    viewer.camera.flyTo({
-      destination: Cartesian3.fromDegrees(102.68587, 37.94787, 30000),
+    // viewer.camera.flyTo({
+    //   destination: Cartesian3.fromDegrees(102.68587, 37.94787, 30000),
+    // });
+
+    // const tileset = viewer.scene.primitives.add(
+    //   new Cesium.Cesium3DTileset({
+    //     url: "http://192.168.6.35:8091/shaoxing/tileset.json",
+    //     //url: Cesium.IonResource.fromAssetId(96188),
+    //   })
+    // );
+
+    // viewer.scene.primitives.add(tileset);
+
+    // viewer.zoomTo(tileset)
+
+    //添加实体
+    const wyoming = viewer.entities.add({
+      position: Cartesian3.fromDegrees(102.541512, 37.811449,0),
+      model: {
+        uri: "模型地址",//http:/202.100.92.236:8088/map/glb/金塔河/建筑.glb
+        // heightReference: HeightReference.CLAMP_TO_GROUND,
+      },
     });
+
+    viewer.zoomTo(wyoming);
     // getDatas(viewer)
+
+
+    viewer.scene.debugShowFramesPerSecond = true;
+
   });
 
   function getDatas(viewer: Viewer) {
