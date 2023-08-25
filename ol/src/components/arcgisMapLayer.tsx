@@ -123,7 +123,7 @@ export const ArcgisMapLayer = () => {
           if (source) {
             const urls = source.urls;
             const url = (urls && urls[0] ? urls[0] : "") || source.url_;
-            if (url.indexOf("/rest/services") > -1) {
+            if (url && url.indexOf("/rest/services") > -1) {
               const url = urls[0];
               const queryResult = await (await fetch(`${url}?f=json`)).json();
               if (
