@@ -27,18 +27,37 @@ export const ArcgisFeatureLayer = () => {
           }),
         }),
       ],
+      // view: new View({
+      //   center: transform([103, 36], "EPSG:4326", "EPSG:3857"),
+      //   zoom: 7,
+      // }),
       view: new View({
-        center: transform([103, 36], "EPSG:4326", "EPSG:3857"),
-        zoom: 7,
+        center: fromLonLat([1.72, 52.4]),
+        zoom: 14,
       }),
     });
 
     addLayer(map);
+
+    const displayFeatureInfo = function (pixel: any) {
+      const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
+        return feature;
+      });
+      if (feature) console.log(feature);
+    };
+
+    map.on(["click", "pointermove"], function (evt: any) {
+      if (evt.dragging) {
+        return;
+      }
+      displayFeatureInfo(evt.pixel);
+    });
   }, []);
 
   async function addLayer(map: OlMap) {
     const serviceUrl =
-      "http://xx.xx.xxx.xx:xx/arcgis/rest/services/GSshanhong/%E9%98%B2%E6%B2%BB%E5%8C%BA%E5%9F%BA%E6%9C%AC%E6%83%85%E5%86%B5_%E8%B0%83%E6%9F%A5%E8%AF%84%E4%BB%B7/MapServer/";
+      "https://services-eu1.arcgis.com/NPIbx47lsIiu2pqz/ArcGIS/rest/services/" +
+      "Neptune_Coastline_Campaign_Open_Data_Land_Use_2014/FeatureServer/";
     const layer = "0";
     const vectorSource = new VectorSource({
       format: new EsriJSON(),

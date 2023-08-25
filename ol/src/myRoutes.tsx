@@ -8,10 +8,9 @@ import { WebglPoint2 } from "./components/webglPoint2";
 import { VectorTileMap } from "./components/vectorTileMap";
 import { ArcgisFeatureLayer } from "./components/arcgisFeatureLayer";
 import { VectorMapPoint } from "./components/vectorMapPoint";
-
-
 import { MapMenu } from "./components/mapMenu";
 import Drag from "./components/drag";
+import { ArcgisMapLayer } from "./components/arcgisMapLayer";
 export function MyRoutes() {
   return (
     <Router>
@@ -26,7 +25,11 @@ export function MyRoutes() {
         <Route path="/webglPoint" element={<WebglPoint />}></Route>
         <Route path="/webglPoint2" element={<WebglPoint2 />}></Route>
         <Route path="/VectorTileMap" element={<VectorTileMap />}></Route>
-        <Route path="/arcgisFeatureLayer" element={<ArcgisFeatureLayer />}></Route>
+        <Route
+          path="/arcgisFeatureLayer"
+          element={<ArcgisFeatureLayer />}
+        ></Route>
+        <Route path="/arcgisMapLayer" element={<ArcgisMapLayer />}></Route>
       </Routes>
     </Router>
   );

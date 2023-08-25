@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@turf/turf": "^6.5.0",
     "axios": "^0.24.0",
     "ol": "^7.4.0",
     "ol-ext": "^4.0.9",
