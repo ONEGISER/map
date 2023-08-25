@@ -102,7 +102,7 @@ export const ArcgisMapLayer = () => {
             } else {
               index++;
               if (index < datas.length) {
-                return await queryInfo(datas, index);
+                return await queryInfo(datas, index, url);
               }
             }
           }
