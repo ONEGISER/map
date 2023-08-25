@@ -73,7 +73,7 @@ export const ArcgisMapLayer = () => {
       const bottomR4326 = transform(bottomR, "EPSG:3857", "EPSG:4326");
       let result: any;
       const layers = map.getAllLayers();
-      const queryInfo: any = async (datas: any, index: number) => {
+      const queryInfo: any = async (datas: any, index: number, url: string) => {
         const data = datas[index];
         if (data?.id !== undefined) {
           if (!result) {
@@ -130,7 +130,7 @@ export const ArcgisMapLayer = () => {
                 queryResult.capabilities.indexOf("Query") > -1
               ) {
                 const { layers } = queryResult;
-                const temp = await queryInfo(layers, 0);
+                const temp = await queryInfo(layers, 0, url);
                 if (temp) {
                   result = temp;
                 } else {
