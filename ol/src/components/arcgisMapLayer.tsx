@@ -46,8 +46,11 @@ export const ArcgisMapLayer = () => {
       view,
     });
 
-    const displayFeatureInfo = async function (pixel: any) {
-      const coord = map.getCoordinateFromPixel(pixel);
+    const displayFeatureInfo = async function (evt: any) {
+      if (evt.dragging) {
+        return;
+      }
+      const coord = map.getCoordinateFromPixel(evt.pixel);
       const zoom = map.getView().getZoom();
       let padding = 20;
       if (zoom) {
@@ -147,10 +150,7 @@ export const ArcgisMapLayer = () => {
     };
 
     map.on(["click"], async function (evt: any) {
-      if (evt.dragging) {
-        return;
-      }
-      const result = await displayFeatureInfo(evt.pixel);
+      const result = await displayFeatureInfo(evt);
       console.log(result, "--------------------------");
     });
   }, []);
