@@ -47,6 +47,9 @@ export const Map = () => {
       timeline: false,
       // creditContainer: dom,
       baseLayerPicker: false,
+      terrainProvider: new CesiumTerrainProvider({
+        url: "http://www.freexgis.com/web-data/terrain",
+      }),
     });
 
     getDatas(viewer);
@@ -82,22 +85,8 @@ export const Map = () => {
         console.time("tri-data");
         const delaunator = new Delaunator(datas);
         console.timeEnd("tri-data");
-        console.log(delaunator);
-        const geometryInstances: any[] = [
-          // new GeometryInstance({
-          //   geometry: new PolygonGeometry({
-          //     polygonHierarchy: {
-          //       positions: [
-          //         Cartesian3.fromDegrees(112.845, 30.50581, 33),
-          //         Cartesian3.fromDegrees(112.65869, 30.59447, 33),
-          //         Cartesian3.fromDegrees(112.83835, 30.68593, 33),
-          //       ],
-          //       holes: [],
-          //     },
-          //   }),
-          // }),
-        ];
-        const maskColor = new Color(255 / 255.0, 0 / 255.0, 0 / 255.0, 1);
+        const geometryInstances: any[] = [];
+
         if (delaunator.coords) {
           const triangles: any = delaunator.triangles;
           for (let i = 0; i < triangles.length; i += 3) {
@@ -107,82 +96,67 @@ export const Map = () => {
             const key = getKey([x1, y1]);
             const z1 = obj[key];
             const positions: any[] = [];
-            positions.push(
-              Cartesian3.fromDegrees(x1, y1, z1 ? z1[heightField] : 0)
-            );
+            const height1 = z1 ? z1[heightField] : 0;
+            positions.push(Cartesian3.fromDegrees(x1, y1, height1));
 
             const coord2 = points[triangles[i + 1]];
             const x2 = coord2[0];
             const y2 = coord2[1];
             const key2 = getKey([x2, y2]);
             const z2 = obj[key2];
-            positions.push(
-              Cartesian3.fromDegrees(x2, y2, z2 ? z2[heightField] : 0)
-            );
+            const height2 = z2 ? z2[heightField] : 0;
+            positions.push(Cartesian3.fromDegrees(x2, y2, height2));
 
             const coord3 = points[triangles[i + 2]];
             const x3 = coord3[0];
             const y3 = coord3[1];
             const key3 = getKey([x3, y3]);
             const z3 = obj[key3];
-            positions.push(
-              Cartesian3.fromDegrees(x3, y3, z3 ? z3[heightField] : 0)
-            );
+            const height3 = z3 ? z3[heightField] : 0;
+            positions.push(Cartesian3.fromDegrees(x3, y3, height3));
+
+            const result = (height1 + height2 + height3) / 3;
+            let color;
+
+            if (result <= 5) {
+              color = "#00ffff";
+            } else if (result <= 20) {
+              color = "#00ffbf";
+            } else if (result <= 25) {
+              color = "#80ff00";
+            } else if (result <= 30) {
+              color = "#ffff00";
+            } else if (result <= 35) {
+              color = "#ffbf00";
+            } else if (result <= 40) {
+              color = "#ff8000";
+            } else if (result <= 45) {
+              color = "#ff4000";
+            } else {
+              color = "#ff0000";
+            }
+
             const g = new GeometryInstance({
               geometry: new PolygonGeometry({
+                perPositionHeight: true,
                 polygonHierarchy: {
                   positions,
                   holes: [],
                 },
               }),
               attributes: {
-                color: ColorGeometryInstanceAttribute.fromColor(maskColor),
+                color: ColorGeometryInstanceAttribute.fromColor(
+                  Color.fromCssColorString(color)
+                ),
               },
             });
-            if (i === 0) {
-              viewer.entities.add({
-                //点的位置
-                position: Cesium.Cartesian3.fromDegrees(x1, y1),
-                //点
-                point: {
-                  pixelSize: 10, //点的大小
-                  color: Cesium.Color.RED, //点的颜色
-                },
-              });
-            }
-            // viewer.entities.add({
-            //   //点的位置
-            //   position: Cesium.Cartesian3.fromDegrees(x2, y2),
-            //   //点
-            //   point: {
-            //     pixelSize: 10, //点的大小
-            //     color: Cesium.Color.RED, //点的颜色
-            //   },
-            // });
-            // viewer.entities.add({
-            //   //点的位置
-            //   position: Cesium.Cartesian3.fromDegrees(x3, y3),
-            //   //点
-            //   point: {
-            //     pixelSize: 10, //点的大小
-            //     color: Cesium.Color.RED, //点的颜色
-            //   },
-            // });
             geometryInstances.push(g);
           }
 
           const pri = new Primitive({
             geometryInstances,
-            appearance: new EllipsoidSurfaceAppearance({
-              aboveGround: true,
-              material: new Material({
-                fabric: {
-                  type: "Color",
-                  uniforms: {
-                    color: maskColor,
-                  },
-                },
-              }),
+            appearance: new Cesium.PerInstanceColorAppearance({
+              flat: true,
             }),
             show: true,
           });
