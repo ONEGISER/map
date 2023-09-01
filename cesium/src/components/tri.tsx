@@ -57,14 +57,15 @@ export const Map = () => {
   });
 
   function getDatas(viewer: Viewer) {
+    const heightField = "NewField_2";
+    const limit = 300;
+
     console.time("get-data");
     axios.get("/point.geojson").then((response) => {
       const getKey = (temp: any) => {
         return `${temp[0]},${temp[1]}`;
       };
       console.timeEnd("get-data");
-      const heightField = "NewField_2";
-      const getData = () => {};
       if (response.data) {
         const { data } = response;
         console.log(data);
@@ -114,6 +115,14 @@ export const Map = () => {
             const z3 = obj[key3];
             const height3 = z3 ? z3[heightField] : 0;
             positions.push(Cartesian3.fromDegrees(x3, y3, height3));
+
+            const d1 = Cartesian3.distance(positions[0], positions[1]);
+            const d2 = Cartesian3.distance(positions[1], positions[2]);
+            const d3 = Cartesian3.distance(positions[0], positions[2]);
+
+            if (d1 > limit || d2 > limit || d3 > limit) {
+              continue;
+            }
 
             const result = (height1 + height2 + height3) / 3;
             let color;
