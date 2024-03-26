@@ -8,6 +8,14 @@ import XYZ from "ol/source/XYZ.js";
 import { fromLonLat } from "ol/proj.js";
 import { addCoordinateTransforms, addProjection, transform } from "ol/proj.js";
 import ImageWMS from "ol/source/ImageWMS.js";
+import * as turf from "@turf/turf";
+import Point from "ol/geom/Point.js";
+import Feature from "ol/Feature.js";
+import VectorSource from "ol/source/Vector.js";
+import { Vector as VectorLayer } from "ol/layer.js";
+import { Style, Circle, Stroke, Fill } from "ol/style.js";
+import LineString from "ol/geom/LineString.js";
+
 const map = new Map({
   layers: [
     new TileLayer({
@@ -55,3 +63,88 @@ const layer = new Image({
 });
 
 map.addLayer(layer);
+
+const p1 = new Point(
+  transform([119.0330992609, 34.1710130652], "EPSG:4326", "EPSG:3857")
+);
+const p2 = new Point(
+  transform([119.3247386817, 34.65488726], "EPSG:4326", "EPSG:3857")
+);
+const p = new Point(
+  transform([119.14986369253056, 34.349999252739885], "EPSG:4326", "EPSG:3857")
+);
+const p1F = new Feature(p1);
+const p2F = new Feature(p2);
+const pF = new Feature(p);
+const temp = [
+  transform([119.0330992609, 34.1710130652], "EPSG:4326", "EPSG:3857"),
+  transform([119.3247386817, 34.65488726], "EPSG:4326", "EPSG:3857"),
+];
+console.log(temp);
+const line2 = new LineString(temp);
+const lineF = new Feature({ geometry: line2 });
+
+const layer2 = new VectorLayer({
+  source: new VectorSource({ features: [p1F, p2F, pF, lineF] }),
+  style: new Style({
+    image: new Circle({
+      radius: 5, //半径
+      fill: new Fill({
+        //填充样式
+        color: "#ff6688",
+      }),
+      stroke: new Stroke({
+        //边界样式
+        color: "#555555",
+        width: 1,
+      }),
+    }),
+  }),
+});
+
+const layer3 = new VectorLayer({
+  source: new VectorSource({ features: [lineF] }),
+  style: new Style({
+    stroke: new Stroke({
+      //边界样式
+      color: "red",
+      width: 1,
+    }),
+  }),
+});
+map.addLayer(layer2);
+map.addLayer(layer3);
+
+var line = turf.lineString([
+  [119.0330992609, 34.1710130652],
+  [119.3247386817, 34.65488726],
+]);
+var pt = turf.point([119.14986369253056, 34.349999252739885]);
+
+var snapped = turf.nearestPointOnLine(line, pt, { units: "miles" });
+
+const temp2 = snapped.geometry.coordinates;
+const temp2p = new Point(transform(temp2, "EPSG:4326", "EPSG:3857"));
+const temp2pF = new Feature(temp2p);
+console.log(snapped);
+
+const layer4 = new VectorLayer({
+  source: new VectorSource({ features: [temp2pF] }),
+  style: new Style({
+    image: new Circle({
+      radius: 5, //半径
+      fill: new Fill({
+        //填充样式
+        color: "green",
+      }),
+      stroke: new Stroke({
+        //边界样式
+        color: "#555555",
+        width: 1,
+      }),
+    }),
+  }),
+});
+
+map.addLayer(layer4);
+
