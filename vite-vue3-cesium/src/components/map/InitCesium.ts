@@ -4,6 +4,8 @@ import {
   GeographicTilingScheme,
   WebMapTileServiceImageryProvider,
   CesiumTerrainProvider,
+  ImageryLayer,
+  Terrain,
 } from "cesium";
 export class InitCesium {
   container: Element | string;
@@ -19,7 +21,7 @@ export class InitCesium {
       "&style=default&format=tiles&tk=" +
       TDT_tk;
     const viewer: Viewer = new Viewer(this.container, {
-      imageryProvider: new WebMapTileServiceImageryProvider({
+      baseLayer: new ImageryLayer(new WebMapTileServiceImageryProvider({
         url: TDT_IMG_C,
         layer: "tdtImg_c",
         style: "default",
@@ -49,10 +51,10 @@ export class InitCesium {
           "19",
         ],
         maximumLevel: 50,
-      }),
-      terrainProvider: new CesiumTerrainProvider({
-        url: "http://www.freexgis.com/web-data/terrain", //此地址在超图API中无法使用
-      }),
+      })),
+      terrain: new Terrain(CesiumTerrainProvider.fromUrl(
+        "http://www.freexgis.com/web-data/terrain",
+      )),
       infoBox: false,
       selectionIndicator: false,
       animation: false,
